@@ -48,7 +48,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         
         samples.enumerated().forEach { index, code in
             expect(sut, toCompleteWith: .failure(.invalidData), when: {
-                client.complete(withStatusCode: code, data: emptyJSON(), at: index)
+                client.complete(withStatusCode: code, data: makeEmptyJSON(), at: index)
             })
         }
     }
@@ -66,7 +66,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let (sut, client) = makeSUT()
 
         expect(sut, toCompleteWith: .success([]), when: {
-            client.complete(withStatusCode: 200, data: emptyJSON())
+            client.complete(withStatusCode: 200, data: makeEmptyJSON())
         })
     }
     
@@ -128,15 +128,8 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return try! JSONSerialization.data(withJSONObject: json, options: [])
     }
         
-    private func emptyJSON() -> Data {
-        let emptyJSON = """
-{
-    "code": "a code",
-    "description": "a description",
-    "data": []
-}
-"""
-        return emptyJSON.data(using: .utf8)!
+    private func makeEmptyJSON() -> Data {
+        return "{\"data\": []}".data(using: .utf8)!
     }
     
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
