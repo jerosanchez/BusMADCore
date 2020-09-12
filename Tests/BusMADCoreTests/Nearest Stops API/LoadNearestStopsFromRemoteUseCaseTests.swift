@@ -48,8 +48,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         
         samples.enumerated().forEach { index, code in
             expect(sut, toCompleteWith: .failure(.invalidData), when: {
-                let anyData = "any data".data(using: .utf8)!
-                client.complete(withStatusCode: code, data: anyData, at: index)
+                client.complete(withStatusCode: code, data: emptyJSON(), at: index)
             })
         }
     }
