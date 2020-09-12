@@ -104,6 +104,15 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         }
     }
     
+    func test_load_deliversErrorOn200HTTPRequestWithInvalidJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWithError: .invalidData, when: {
+            let invalidJSON = "invalid JSON".data(using: .utf8)!
+            client.complete(withStatusCode: 200, data: invalidJSON)
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClient) {
