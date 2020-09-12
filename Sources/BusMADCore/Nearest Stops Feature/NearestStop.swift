@@ -19,3 +19,12 @@ struct NearestStopLine {
     let origin: String
     let destination: String
 }
+
+enum LoadStopsResult {
+    case success([NearestStop])
+    case failure(Error)
+}
+
+protocol StopsLoader {
+    func load(latitude: Double, longitude: Double, radius: Int, completion: @escaping (LoadStopsResult) -> Void)
+}
