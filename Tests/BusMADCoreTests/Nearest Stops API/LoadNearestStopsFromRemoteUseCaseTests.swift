@@ -36,7 +36,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let anyError = NSError(domain: "any error", code: 0)
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWithError: .connectivity, when: {
+        expect(sut, toCompleteWith: .failure(.connectivity), when: {
             client.complete(withError: anyError)
         })
     }
@@ -47,7 +47,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let samples = [199, 201, 300, 400, 500]
         
         samples.enumerated().forEach { index, code in
-            expect(sut, toCompleteWithError: .invalidData, when: {
+            expect(sut, toCompleteWith: .failure(.invalidData), when: {
                 let anyData = "any data".data(using: .utf8)!
                 client.complete(withStatusCode: code, data: anyData, at: index)
             })
@@ -57,7 +57,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     func test_load_deliversErrorOn200HTTPRequestWithInvalidJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWithError: .invalidData, when: {
+        expect(sut, toCompleteWith: .failure(.invalidData), when: {
             let invalidJSON = "invalid JSON".data(using: .utf8)!
             client.complete(withStatusCode: 200, data: invalidJSON)
         })
@@ -66,7 +66,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     func test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: [], when: {
+        expect(sut, toCompleteWith: .success([]), when: {
             client.complete(withStatusCode: 200, data: emptyJSON())
         })
     }
@@ -90,35 +90,20 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return emptyJSON.data(using: .utf8)!
     }
     
-    private func expect(_ sut: RemoteStopsLoader, toCompleteWithError expectedError: RemoteStopsLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
-        let exp = expectation(description: "Wait for load completion")
-        
-        sut.load() { result in
-            switch result {
-            case let .failure(receivedError):
-                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
-                exp.fulfill()
-            default:
-                XCTFail("Expected error \(expectedError), got \(result) instead.", file: file, line: line)
-            }
-        }
-        
-        action()
-        
-        wait(for: [exp], timeout: 1.0)
-    }
-    
-    private func expect(_ sut: RemoteStopsLoader, toCompleteWith expectedStops: [NearestStop], when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: RemoteStopsLoader, toCompleteWith expectedResult: RemoteStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
 
-        sut.load() { result in
-            switch result {
-            case let .success(receivedStops):
+        sut.load() { receivedResult in
+            switch (receivedResult, expectedResult) {
+            case let (.success(receivedStops), .success(expectedStops)):
                 XCTAssertEqual(receivedStops, expectedStops, file: file, line: line)
-                exp.fulfill()
+            case let (.failure(receivedError), .failure(expectedError)):
+                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
             default:
-                XCTFail("Expected success with \(expectedStops), got \(result) instead.", file: file, line: line)
+                XCTFail("Expected result \(expectedResult), got \(receivedResult) instead.", file: file, line: line)
             }
+            
+            exp.fulfill()
         }
 
         action()
