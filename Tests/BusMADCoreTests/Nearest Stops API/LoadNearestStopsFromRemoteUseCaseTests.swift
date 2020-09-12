@@ -86,35 +86,21 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let anyError = NSError(domain: "any error", code: 0)
         let (sut, client) = makeSUT()
 
-        let exp = expectation(description: "Wait for load completion")
-        
-        sut.load() { receivedError in
-            XCTAssertEqual(receivedError, .connectivity)
-            exp.fulfill()
-        }
-        
-        client.complete(withError: anyError)
-        
-        wait(for: [exp], timeout: 1.0)
+        expect(sut, toCompleteWithError: .connectivity, when: {
+            client.complete(withError: anyError)
+        })
     }
     
     func test_load_deliversErrorOnNon200HTTPResponse() {
         let (sut, client) = makeSUT()
 
-
         let samples = [199, 201, 300, 400, 500]
+        
         samples.enumerated().forEach { index, code in
-            let exp = expectation(description: "Wait for load completion")
-
-            sut.load() { receivedError in
-                XCTAssertEqual(receivedError, .invalidData)
-                exp.fulfill()
-            }
-
-            let anyData = "any data".data(using: .utf8)!
-            client.complete(withStatusCode: code, data: anyData, at: index)
-            
-            wait(for: [exp], timeout: 1.0)
+            expect(sut, toCompleteWithError: .invalidData, when: {
+                let anyData = "any data".data(using: .utf8)!
+                client.complete(withStatusCode: code, data: anyData, at: index)
+            })
         }
     }
     
@@ -124,6 +110,19 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let client = HTTPClient()
         let sut = RemoteStopsLoader(url: url, client: client)
         return (sut, client)
+    }
+    
+    private func expect(_ sut: RemoteStopsLoader, toCompleteWithError expectedError: RemoteStopsLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        let exp = expectation(description: "Wait for load completion")
+        
+        sut.load() { receivedError in
+            XCTAssertEqual(receivedError, expectedError, file: file, line: line)
+            exp.fulfill()
+        }
+        
+        action()
+        
+        wait(for: [exp], timeout: 1.0)
     }
     
     // MARK: - Linux compatibility
