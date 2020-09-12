@@ -25,20 +25,21 @@ public class RemoteNearestStopsLoader {
     
     public func load(completion: @escaping (Result) -> Void) {
         client.get(from: url) { [weak self] result in
-            guard let self = self else { return }
+            guard self != nil else { return }
             
             switch result {
             case let .success(data, response):
-                completion(self.map(data, with: response))
+                completion(RemoteNearestStopsMapper.map(data, with: response))
             case .failure:
                 completion(.failure(.connectivity))
             }
         }
     }
+}
+
+class RemoteNearestStopsMapper {
     
-    // MARK: - Helpers
-    
-    private func map(_ data: Data, with response: HTTPURLResponse) -> Result {
+    static func map(_ data: Data, with response: HTTPURLResponse) -> RemoteNearestStopsLoader.Result {
         if response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) {
             return .success(root.data.map { $0.model })
         } else {
