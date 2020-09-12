@@ -3,6 +3,7 @@
 //
 
 import XCTest
+import BusMADCore
 
 class HTTPClient {
     private var messages = [(url: URL, completion: (Result) -> Void)]()
@@ -38,21 +39,50 @@ class RemoteStopsLoader {
         case invalidData
     }
     
+    enum Result {
+        case success([NearestStop])
+        case failure(Error)
+    }
+    
     init(url: URL, client: HTTPClient) {
         self.url = url
         self.client = client
     }
     
-    func load(completion: @escaping (Error) -> Void) {
+    func load(completion: @escaping (Result) -> Void) {
         client.get(from: url) { result in
             switch result {
-            case .success:
-                completion(.invalidData)
+            case let .success(data, response):
+                if response.statusCode == 200, let _ = try? JSONDecoder().decode(Root.self, from: data) {
+                    completion(.success([]))
+                } else {
+                    completion(.failure(.invalidData))
+                }
             case .failure:
-                completion(.connectivity)
+                completion(.failure(.connectivity))
             }
         }
     }
+}
+
+struct Root: Decodable {
+    let data: [RemoteNearestStop]
+}
+
+public struct RemoteNearestStop: Decodable {
+    public let id: Int
+    public let latitude: Double
+    public let longitude: Double
+    public let name: String
+    public let address: String
+    public let distanceInMeters: Int
+    public let lines: [RemoteNearestStopLine]
+}
+
+public struct RemoteNearestStopLine: Decodable {
+    public let id: Int
+    public let origin: String
+    public let destination: String
 }
 
 class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
@@ -113,6 +143,14 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         })
     }
     
+    func test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: [], when: {
+            client.complete(withStatusCode: 200, data: emptyJSON())
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClient) {
@@ -120,13 +158,29 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let sut = RemoteStopsLoader(url: url, client: client)
         return (sut, client)
     }
+        
+    private func emptyJSON() -> Data {
+        let emptyJSON = """
+{
+    "code": "a code",
+    "description": "a description",
+    "data": []
+}
+"""
+        return emptyJSON.data(using: .utf8)!
+    }
     
     private func expect(_ sut: RemoteStopsLoader, toCompleteWithError expectedError: RemoteStopsLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
         
-        sut.load() { receivedError in
-            XCTAssertEqual(receivedError, expectedError, file: file, line: line)
-            exp.fulfill()
+        sut.load() { result in
+            switch result {
+            case let .failure(receivedError):
+                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
+                exp.fulfill()
+            default:
+                XCTFail("Expected error \(expectedError), got \(result) instead.", file: file, line: line)
+            }
         }
         
         action()
@@ -134,6 +188,24 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
     
+    private func expect(_ sut: RemoteStopsLoader, toCompleteWith expectedStops: [NearestStop], when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        let exp = expectation(description: "Wait for load completion")
+
+        sut.load() { result in
+            switch result {
+            case let .success(receivedStops):
+                XCTAssertEqual(receivedStops, expectedStops, file: file, line: line)
+                exp.fulfill()
+            default:
+                XCTFail("Expected success with \(expectedStops), got \(result) instead.", file: file, line: line)
+            }
+        }
+
+        action()
+
+        wait(for: [exp], timeout: 1.0)
+    }
+
     // MARK: - Linux compatibility
     
     static var allTests = [

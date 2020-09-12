@@ -4,18 +4,18 @@
 
 import Foundation
 
-struct NearestStop {
-    let id: Int
-    let latitude: Double
-    let longitude: Double
-    let name: String
-    let address: String
-    let distanceInMeters: Int
-    let lines: [NearestStopLine]
+public struct NearestStop: Equatable {
+    public let id: Int
+    public let latitude: Double
+    public let longitude: Double
+    public let name: String
+    public let address: String
+    public let distanceInMeters: Int
+    public let lines: [NearestStopLine]
 }
 
-struct NearestStopLine {
-    let id: Int
-    let origin: String
-    let destination: String
+public struct NearestStopLine: Equatable {
+    public let id: Int
+    public let origin: String
+    public let destination: String
 }
