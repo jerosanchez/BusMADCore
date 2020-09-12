@@ -40,7 +40,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
 
         sut.load()
 
-        XCTAssertEqual(client.requestedURLs.first, url)
+        XCTAssertEqual(client.requestedURLs, [url])
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
@@ -50,9 +50,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         sut.load()
         sut.load()
 
-        XCTAssertEqual(client.requestedURLs.count, 2)
-        XCTAssertEqual(client.requestedURLs[0], url)
-        XCTAssertEqual(client.requestedURLs[0], url)
+        XCTAssertEqual(client.requestedURLs, [url, url])
     }
     
     // MARK: - Helpers
