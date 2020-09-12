@@ -77,8 +77,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let stop2 = makeStop(id: 2)
         
         expect(sut, toCompleteWith: .success([stop1.model, stop2.model]), when: {
-            let stopsJSON = [stop1.json, stop2.json]
-            client.complete(withStatusCode: 200, data: makeJSON(stopsJSON))
+            client.complete(withStatusCode: 200, data: makeJSON([stop1.json, stop2.json]))
         })
     }
     
