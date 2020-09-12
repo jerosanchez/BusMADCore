@@ -70,6 +70,75 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         })
     }
     
+    func test_load_deliversStopsOn200HTTPResponseWithStopsJSON() {
+        let (sut, client) = makeSUT()
+        
+        let line1 = NearestStopLine(id: 1, origin: "line1 origin", destination: "line1 destination")
+        let line2 = NearestStopLine(id: 2, origin: "line2 origin", destination: "line2 destionation")
+
+        let stop1 = NearestStop(id: 1, latitude: 1.0, longitude: 1.0, name: "stop1", address: "stop1 address", distanceInMeters: 1, lines: [line1, line2])
+        
+        let stopJSON1: [String: Any] = [
+            "stopId": stop1.id,
+            "geometry": [
+                "coordinates": [
+                    stop1.latitude, stop1.longitude
+                ]
+            ],
+            "stopName": stop1.name,
+            "address": stop1.address,
+            "metersToPoint": stop1.distanceInMeters,
+            "lines": [
+                [
+                    "line": stop1.lines[0].id,
+                    "nameA": stop1.lines[0].origin,
+                    "nameB": stop1.lines[0].destination,
+                ],
+                [
+                    "line": stop1.lines[1].id,
+                    "nameA": stop1.lines[1].origin,
+                    "nameB": stop1.lines[1].destination,
+                ],
+            ],
+        ]
+        
+        let line3 = NearestStopLine(id: 1, origin: "line3 origin", destination: "line3 destination")
+        let line4 = NearestStopLine(id: 2, origin: "line4 origin", destination: "line4 destination")
+
+        let stop2 = NearestStop(id: 2, latitude: 2.0, longitude: 2.0, name: "stop2", address: "stop2 address", distanceInMeters: 1, lines: [line3, line4])
+        
+        let stopJSON2: [String: Any] = [
+            "stopId": stop2.id,
+            "geometry": [
+                "coordinates": [
+                    stop2.latitude, stop2.longitude
+                ]
+            ],
+            "stopName": stop2.name,
+            "address": stop2.address,
+            "metersToPoint": stop2.distanceInMeters,
+            "lines": [
+                [
+                    "line": stop2.lines[0].id,
+                    "nameA": stop2.lines[0].origin,
+                    "nameB": stop2.lines[0].destination,
+                ],
+                [
+                    "line": stop2.lines[1].id,
+                    "nameA": stop2.lines[1].origin,
+                    "nameB": stop2.lines[1].destination,
+                ],
+            ],
+        ]
+        
+        let stopsJSON = ["data": [stopJSON1, stopJSON2]]
+        let stops = [stop1, stop2]
+
+        expect(sut, toCompleteWith: .success(stops), when: {
+            client.complete(withStatusCode: 200, data: try! JSONSerialization.data(withJSONObject: stopsJSON, options: []))
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClientSpy) {
