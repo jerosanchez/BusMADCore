@@ -29,21 +29,26 @@ class RemoteStopsLoader {
 class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     
     func test_init_doesNotRequestDataFromURL() {
-        let url = URL(string: "https://a-url.com")!
-        let client = HTTPClient()
-        let _ = RemoteStopsLoader(url: url, client: client)
+        let (_, client) = makeSUT()
         
         XCTAssertTrue(client.requestedURLs.isEmpty)
     }
     
     func test_load_requestsDataFromURL() {
         let url = URL(string: "https://a-url.com")!
-        let client = HTTPClient()
-        let sut = RemoteStopsLoader(url: url, client: client)
+        let (sut, client) = makeSUT(url: url)
 
         sut.load()
 
         XCTAssertEqual(client.requestedURLs.first, url)
+    }
+    
+    // MARK: - Helpers
+    
+    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClient) {
+        let client = HTTPClient()
+        let sut = RemoteStopsLoader(url: url, client: client)
+        return (sut, client)
     }
     
     // MARK: - Linux compatibility
