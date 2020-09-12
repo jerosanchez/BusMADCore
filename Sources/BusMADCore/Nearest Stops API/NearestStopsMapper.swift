@@ -6,7 +6,7 @@ import Foundation
 
 class NearestStopsMapper {
     struct Root: Decodable {
-        internal let data: [RemoteStop]
+        internal let data: [RemoteNearestStop]
     }
 
     static func map(_ data: Data, with response: HTTPURLResponse) -> RemoteNearestStopsLoader.Result {
@@ -18,13 +18,13 @@ class NearestStopsMapper {
     }
 }
 
-internal struct RemoteStop: Decodable {
+internal struct RemoteNearestStop: Decodable {
     internal let stopId: Int
     internal let geometry: RemoteGeometry
     internal let stopName: String
     internal let address: String
     internal let metersToPoint: Int
-    internal let lines: [RemoteLine]
+    internal let lines: [RemoteNearestStopLine]
     
     var model: NearestStop {
         return NearestStop(
@@ -45,7 +45,7 @@ internal struct RemoteGeometry: Decodable {
     internal let coordinates: [Double]
 }
 
-internal struct RemoteLine: Decodable {
+internal struct RemoteNearestStopLine: Decodable {
     internal let line: Int
     internal let nameA: String
     internal let nameB: String
