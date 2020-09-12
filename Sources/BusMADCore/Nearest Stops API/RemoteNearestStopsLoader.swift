@@ -4,7 +4,7 @@
 
 import Foundation
 
-public class RemoteStopsLoader {
+public class RemoteNearestStopsLoader {
     private let url: URL
     private let client: HTTPClient
     

@@ -83,9 +83,9 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClientSpy) {
+    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteNearestStopsLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
-        let sut = RemoteStopsLoader(url: url, client: client)
+        let sut = RemoteNearestStopsLoader(url: url, client: client)
         return (sut, client)
     }
     
@@ -139,7 +139,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return emptyJSON.data(using: .utf8)!
     }
     
-    private func expect(_ sut: RemoteStopsLoader, toCompleteWith expectedResult: RemoteStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
 
         sut.load() { receivedResult in
