@@ -2,20 +2,20 @@
 
 ## BDD Specs
 
-### Story: Customer requests to see the nearest stops
+### Story: User requests to see the nearest stops
 
 #### Narrative #1
 
-> As an online customer
+> As an online user
 I want the app to load the nearest stops to my current location
 So I can choose a stop to see detailed information
 
 Scenarios (acceptance criteria):
 
 ```
-Given the customer has connectivity
-When the customer request to see the nearest stops
-Then the app should display a list of the nearest stops to the customer's current location within a certain radius
+Given the user has connectivity
+When the user request to see the nearest stops
+Then the app should display a list of the nearest stops to the user's current location within a certain radius
 ```
 
 ## Use Cases
@@ -35,13 +35,13 @@ Then the app should display a list of the nearest stops to the customer's curren
 4. System creates nearest stops from valid data.
 5. System delivers nearest stops.
 
-#### Session expired - error course (sad path):
+#### No connectivity – error course (sad path):
 1. System delivers error.
 
 #### Invalid data – error course (sad path):
 1. System delivers error.
 
-#### No connectivity – error course (sad path):
+#### Session expired - error course (sad path):
 1. System delivers error.
 
 #### Wrong request - error course (sad path):
@@ -50,11 +50,11 @@ Then the app should display a list of the nearest stops to the customer's curren
 
 ## Flowchart
 
-Not available
+Not available.
 
 ## Architecture
 
-Not available
+Not available.
 
 ## Model Specs
 
@@ -62,23 +62,23 @@ Not available
 
 | Property      | Type          |
 |---------------|---------------|
-| `stopId`      | `Int`         |
+| `id`          | `Int`         |
 | `latitude`    | `Double`      |
 | `longitude`   | `Double`      |
 | `name`        | `String`      |
 | `address`     | `String`      |
 | `distance`    | `Int`         |
-| `lines`       | `[NSL]`       | An array of Nearest Stop Line
+| `lines`       | `[NSL]`       | An array of Nearest Stop Line objects
  
 ### Nearest Stop Line
 
 | Property      | Type      |
 |---------------|-----------|
-| `lineId`      | `Int`     |
+| `id`          | `Int`     |
 | `origin`      | `String`  |
 | `destination` | `String`  |
 
-### Payload contract
+## Payload contract
 
 ```
 GET https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy/<longitude>/<latitude>/<radius>/
@@ -95,27 +95,27 @@ On success:
 
 {
     "code": "00",
-    "description": "Data recovered OK (lapsed: 89 millsecs)",
+    "description": "a description",
     "data": [
         {
-            "stopId": 3343,
+            "stopId": 1,
             "geometry": {
                 "type": "Point",
                 "coordinates": [
-                    -3.64104303073248,
-                    40.3870110914798
+                    0.0,
+                    0.0
                 ]
             },
-            "stopName": "Metro Miguel Hernández",
-            "address": "Av. Rafael Alberti, 22",
-            "metersToPoint": 168,
+            "stopName": "a name",
+            "address": "an address",
+            "metersToPoint": 1,
             "lines": [
                 {
-                    "line": "144",
-                    "label": "144",
-                    "nameA": "PAVONES",
-                    "nameB": "ENTREVIAS",
-                    "metersFromHeader": 2212,
+                    "line": "a line number",
+                    "label": "a line name",
+                    "nameA": "a stop name",
+                    "nameB": "another stop name",
+                    "metersFromHeader": 1,
                     "to": "B"
                 }
             ]
@@ -123,7 +123,9 @@ On success:
         
 		...
     ]
-```
+
+where first item in `coordinates` is the longitude, and second is the latitude. 
+``` 
 
 On session expired:
 
@@ -132,18 +134,20 @@ On session expired:
 
 {
     "code": "80",
-    "description": "Error, token XXX not found in cache"
+    "description": "a description"
 }
 ```
 
-On invalid request data:
+On invalid request:
 
 ```
 200 RESPONSE
 
 {
     "code": "90",
-    "description": "XXX",
+    "description": "a description",
     "data": []
 }
 ```
+
+For more information you can see the [EMT Madrid API documentation](https://apidocs.emtmadrid.es/#api-Block_3_TRANSPORT_BUSEMTMAD-detail_of_stops_arround_geopoint).
