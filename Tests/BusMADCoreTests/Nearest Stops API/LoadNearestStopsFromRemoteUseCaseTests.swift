@@ -5,17 +5,27 @@
 import XCTest
 
 class HTTPClient {
-    private var messages = [(url: URL, completion: (Error) -> Void)]()
+    private var messages = [(url: URL, completion: (Result) -> Void)]()
     var requestedURLs: [URL] {
         messages.map { $0.url }
     }
     
-    func get(from url: URL, completion: @escaping (Error) -> Void) {
+    enum Result {
+        case success(Data, HTTPURLResponse)
+        case failure(Error)
+    }
+    
+    func get(from url: URL, completion: @escaping (Result) -> Void) {
         messages.append((url, completion))
     }
     
     func complete(withError error: Error, at index: Int = 0) {
-        messages[index].completion(error)
+        messages[index].completion(.failure(error))
+    }
+    
+    func complete(withStatusCode code: Int, data: Data, at index: Int = 0) {
+        let response = HTTPURLResponse(url: messages[index].url, statusCode: code, httpVersion: nil, headerFields: nil)!
+        messages[index].completion(.success(data, response))
     }
 }
 
@@ -25,6 +35,7 @@ class RemoteStopsLoader {
     
     enum Error {
         case connectivity
+        case invalidData
     }
     
     init(url: URL, client: HTTPClient) {
@@ -33,8 +44,13 @@ class RemoteStopsLoader {
     }
     
     func load(completion: @escaping (Error) -> Void) {
-        client.get(from: url) { _ in
-            completion(.connectivity)
+        client.get(from: url) { result in
+            switch result {
+            case .success:
+                completion(.invalidData)
+            case .failure:
+                completion(.connectivity)
+            }
         }
     }
 }
@@ -79,6 +95,22 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         
         client.complete(withError: anyError)
         
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func test_load_deliversErrorOnNon200HTTPResponse() {
+        let (sut, client) = makeSUT()
+
+        let exp = expectation(description: "Wait for load completion")
+
+        sut.load() { receivedError in
+            XCTAssertEqual(receivedError, .invalidData)
+            exp.fulfill()
+        }
+
+        let anyData = "any data".data(using: .utf8)!
+        client.complete(withStatusCode: 400, data: anyData)
+
         wait(for: [exp], timeout: 1.0)
     }
     
