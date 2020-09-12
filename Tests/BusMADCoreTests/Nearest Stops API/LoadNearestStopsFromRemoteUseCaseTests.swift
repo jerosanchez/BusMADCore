@@ -5,29 +5,13 @@
 import XCTest
 import BusMADCore
 
-class HTTPClient {
-    private var messages = [(url: URL, completion: (Result) -> Void)]()
-    var requestedURLs: [URL] {
-        messages.map { $0.url }
-    }
-    
-    enum Result {
-        case success(Data, HTTPURLResponse)
-        case failure(Error)
-    }
-    
-    func get(from url: URL, completion: @escaping (Result) -> Void) {
-        messages.append((url, completion))
-    }
-    
-    func complete(withError error: Error, at index: Int = 0) {
-        messages[index].completion(.failure(error))
-    }
-    
-    func complete(withStatusCode code: Int, data: Data, at index: Int = 0) {
-        let response = HTTPURLResponse(url: messages[index].url, statusCode: code, httpVersion: nil, headerFields: nil)!
-        messages[index].completion(.success(data, response))
-    }
+enum HTTPClientResult {
+    case success(Data, HTTPURLResponse)
+    case failure(Error)
+}
+
+protocol HTTPClient {
+    func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void)
 }
 
 class RemoteStopsLoader {
@@ -153,8 +137,8 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClient) {
-        let client = HTTPClient()
+    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteStopsLoader, client: HTTPClientSpy) {
+        let client = HTTPClientSpy()
         let sut = RemoteStopsLoader(url: url, client: client)
         return (sut, client)
     }
@@ -204,6 +188,26 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         action()
 
         wait(for: [exp], timeout: 1.0)
+    }
+    
+    class HTTPClientSpy: HTTPClient {
+        private var messages = [(url: URL, completion: (HTTPClientResult) -> Void)]()
+        var requestedURLs: [URL] {
+            messages.map { $0.url }
+        }
+        
+        func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
+            messages.append((url, completion))
+        }
+        
+        func complete(withError error: Error, at index: Int = 0) {
+            messages[index].completion(.failure(error))
+        }
+        
+        func complete(withStatusCode code: Int, data: Data, at index: Int = 0) {
+            let response = HTTPURLResponse(url: messages[index].url, statusCode: code, httpVersion: nil, headerFields: nil)!
+            messages[index].completion(.success(data, response))
+        }
     }
 
     // MARK: - Linux compatibility
