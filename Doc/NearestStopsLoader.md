@@ -15,12 +15,12 @@ Scenarios (acceptance criteria):
 ```
 Given the customer has connectivity
 When the customer request to see the nearest stops
-Then the app should display a list of the nearest stops to the customer's current location in a radius of 200 meters
+Then the app should display a list of the nearest stops to the customer's current location within a certain radius
 ```
 
 ## Use Cases
 
-### Load Nearest Stops Use Case
+### Load Nearest Stops From Remote Use Case
 
 #### Data
 - URL
