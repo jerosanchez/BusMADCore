@@ -145,13 +145,24 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return (stop, stopJSON)
     }
     
-    private func makeJSON(_ stops: [[String: Any]]) -> Data {
-        let json = ["data": stops]
+    private func makeJSON(code: String = "a code", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
+        var json: [String: Any] = [
+            "code": code as Any,
+            "description": description as Any,
+        ]
+        if let stops = stops {
+            json["data"] = stops
+        }
         return try! JSONSerialization.data(withJSONObject: json, options: [])
     }
         
     private func makeEmptyJSON() -> Data {
-        return "{\"data\": []}".data(using: .utf8)!
+        let emptyJSON: [String: Any] = [
+            "code": "a code",
+            "description": "a description",
+            "data": []
+        ]
+        return try! JSONSerialization.data(withJSONObject: emptyJSON, options: [])
     }
     
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
