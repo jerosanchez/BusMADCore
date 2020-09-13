@@ -230,5 +230,14 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     static var allTests = [
         ("test_init_doesNotRequestDataFromURL", test_init_doesNotRequestDataFromURL),
         ("test_load_requestsDataFromURL", test_load_requestsDataFromURL),
+        ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
+        ("test_load_deliversErrorOnHTTPError", test_load_deliversErrorOnHTTPError),
+        ("test_load_deliversErrorOnNon200HTTPResponse", test_load_deliversErrorOnNon200HTTPResponse),
+        ("test_load_deliversErrorOn200HTTPRequestWithInvalidJSON", test_load_deliversErrorOn200HTTPRequestWithInvalidJSON),
+        ("test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON", test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON),
+        ("test_load_deliversErrorOn200HTTPRequestWithInvalidRequestJSON", test_load_deliversErrorOn200HTTPRequestWithInvalidRequestJSON),
+        ("test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList", test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList),
+        ("test_load_deliversStopsOn200HTTPResponseWithStopsJSON", test_load_deliversStopsOn200HTTPResponseWithStopsJSON),
+        ("test_load_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated", test_load_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated),
     ]
 }
