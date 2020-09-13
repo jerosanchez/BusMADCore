@@ -253,7 +253,6 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         ("test_load_requestsDataFromURL", test_load_requestsDataFromURL),
         ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
         ("test_load_usesAnURLWithProperPathComponents", test_load_usesAnURLWithProperPathComponents),
-        ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
         ("test_load_deliversErrorOnHTTPError", test_load_deliversErrorOnHTTPError),
         ("test_load_deliversErrorOnNon200HTTPResponse", test_load_deliversErrorOnNon200HTTPResponse),
         ("test_load_deliversErrorOn200HTTPRequestWithInvalidJSON", test_load_deliversErrorOn200HTTPRequestWithInvalidJSON),
