@@ -62,6 +62,15 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         })
     }
     
+//    func test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON() {
+//        let (sut, client) = makeSUT()
+//
+//        expect(sut, toCompleteWith: .failure(.expiredSession), when: {
+//            let expiredSessionJSON = "{\"code\": \"80\"}".data(using: .utf8)!
+//            client.complete(withStatusCode: 200, data: expiredSessionJSON)
+//        })
+//    }
+    
     func test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList() {
         let (sut, client) = makeSUT()
 
@@ -145,7 +154,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return (stop, stopJSON)
     }
     
-    private func makeJSON(code: String = "a code", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
+    private func makeJSON(code: String = "00", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
         var json: [String: Any] = [
             "code": code as Any,
             "description": description as Any,
@@ -157,12 +166,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
         
     private func makeEmptyJSON() -> Data {
-        let emptyJSON: [String: Any] = [
-            "code": "a code",
-            "description": "a description",
-            "data": []
-        ]
-        return try! JSONSerialization.data(withJSONObject: emptyJSON, options: [])
+        return makeJSON([])
     }
     
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
