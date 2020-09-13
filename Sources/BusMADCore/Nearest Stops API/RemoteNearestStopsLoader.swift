@@ -23,11 +23,7 @@ public class RemoteNearestStopsLoader: NearestStopsLoader {
     }
     
     public func load(latitude: Double, longitude: Double, radius: Int, completion: @escaping (Result) -> Void) {
-        let url = self.url
-            .appendingPathComponent("/\(longitude)", isDirectory: true)
-            .appendingPathComponent("\(latitude)", isDirectory: true)
-            .appendingPathComponent("\(radius)", isDirectory: true)
-
+        let url = urlWithQueryPathComponents(latitude, longitude, radius)
         client.get(from: url) { [weak self] result in
             guard self != nil else { return }
             
@@ -38,5 +34,14 @@ public class RemoteNearestStopsLoader: NearestStopsLoader {
                 completion(.failure(Error.connectivity))
             }
         }
+    }
+    
+    // MARK: - Helpers
+    
+    private func urlWithQueryPathComponents(_ latitude: Double, _ longitude: Double, _ radius: Int) -> URL {
+        return url
+            .appendingPathComponent("/\(longitude)", isDirectory: true)
+            .appendingPathComponent("\(latitude)", isDirectory: true)
+            .appendingPathComponent("\(radius)", isDirectory: true)
     }
 }
