@@ -62,14 +62,13 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         })
     }
     
-//    func test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON() {
-//        let (sut, client) = makeSUT()
-//
-//        expect(sut, toCompleteWith: .failure(.expiredSession), when: {
-//            let expiredSessionJSON = "{\"code\": \"80\"}".data(using: .utf8)!
-//            client.complete(withStatusCode: 200, data: expiredSessionJSON)
-//        })
-//    }
+    func test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .failure(.expiredSession), when: {
+            client.complete(withStatusCode: 200, data: makeExpiredSessionJSON())
+        })
+    }
     
     func test_load_deliversNoStopOn200HTTPResponseWithEmptyJSONList() {
         let (sut, client) = makeSUT()
@@ -167,6 +166,10 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         
     private func makeEmptyJSON() -> Data {
         return makeJSON([])
+    }
+    
+    private func makeExpiredSessionJSON() -> Data {
+        return makeJSON(code: "80", description: "a description", nil)
     }
     
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {

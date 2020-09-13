@@ -12,9 +12,13 @@ internal class NearestStopsMapper {
     }
 
     internal static func map(_ data: Data, with response: HTTPURLResponse) -> RemoteNearestStopsLoader.Result {
-        if response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data),
-            let stops = (root.data?.map { $0.model }) {
-            return .success(stops)
+        if response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) {
+            if let stops = (root.data?.map { $0.model }) {
+                return .success(stops)
+            } else {
+                return .failure(.expiredSession)
+            }
+            
         } else {
             return .failure(.invalidData)
         }
