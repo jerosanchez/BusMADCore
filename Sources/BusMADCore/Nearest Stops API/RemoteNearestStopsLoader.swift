@@ -12,6 +12,7 @@ public class RemoteNearestStopsLoader {
         case connectivity
         case invalidData
         case expiredSession
+        case invalidRequest
     }
     
     public enum Result {
