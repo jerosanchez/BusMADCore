@@ -7,8 +7,8 @@
 #### Narrative #1
 
 > As an online user
-I want the app to load the nearest stops to my current location
-So I can choose a stop to see detailed information
+> I want the app to load the nearest stops to my location
+> So I can choose the stop that better fits my current needs
 
 Scenarios (acceptance criteria):
 
@@ -82,9 +82,9 @@ Not available.
 ```
 GET https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy/<longitude>/<latitude>/<radius>/
 
-- <longitude> expressed in decimal units (e.g. -3.640491)
-- <latitude> expressed in decimal units (e.g. 40.385558)
-- <radius> expressed in meters from current user's location (.e.g. 200)
+<longitude> expressed in decimal units (e.g. -3.640491)
+<latitude> expressed in decimal units (e.g. 40.385558)
+<radius> expressed in meters from current user's location (.e.g. 200)
 ```
 
 On success:
@@ -122,9 +122,9 @@ On success:
         
 		...
     ]
-
-where first item in `coordinates` is the longitude, and second is the latitude. 
 ``` 
+
+Warning: the first item in `coordinates` is the longitude, and the second is the latitude. 
 
 On session expired:
 
