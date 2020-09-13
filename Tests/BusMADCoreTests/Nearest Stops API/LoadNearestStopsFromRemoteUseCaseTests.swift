@@ -14,26 +14,35 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_requestsDataFromURL() {
+        let url = URL(string: "https://a-url.com")!
+        let (sut, client) = makeSUT(url: url)
+
+        sut.load(longitude: 1.0) { _ in }
+
+        XCTAssertEqual(client.requestedURLs.count, 1)
+    }
+    
+    func test_loadTwice_requestsDataFromURLTwice() {
+        let url = URL(string: "https://a-url.com")!
+        let (sut, client) = makeSUT(url: url)
+
+        sut.load(longitude: 1.0) { _ in }
+        sut.load(longitude: 1.0) { _ in }
+
+        XCTAssertEqual(client.requestedURLs.count, 2)
+    }
+    
+    func test_load_usesAnURLWithProperPathComponents() {
         let longitude = 1.0
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
         sut.load(longitude: longitude) { _ in }
-
-        let expectedURL = makeExpectedURL(url, longitude: longitude)
+        
+        let expectedURL = url
+            .appendingPathComponent("\(longitude)", isDirectory: true)
+        
         XCTAssertEqual(client.requestedURLs, [expectedURL])
-    }
-    
-    func test_loadTwice_requestsDataFromURLTwice() {
-        let longitude = 1.0
-        let url = URL(string: "https://a-url.com")!
-        let (sut, client) = makeSUT(url: url)
-
-        sut.load(longitude: 1.0) { _ in }
-        sut.load(longitude: 1.0) { _ in }
-
-        let expectedURL = makeExpectedURL(url, longitude: longitude)
-        XCTAssertEqual(client.requestedURLs, [expectedURL, expectedURL])
     }
     
     func test_load_deliversErrorOnHTTPError() {
@@ -129,10 +138,6 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         addTeardownBlock { [weak instance] in
             XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
         }
-    }
-    
-    private func makeExpectedURL(_ url: URL, longitude: Double) -> URL {
-        return url.appendingPathComponent("\(longitude)", isDirectory: true)
     }
     
     private func makeStop(id: Int) -> (model: NearestStop, json: [String: Any]){
