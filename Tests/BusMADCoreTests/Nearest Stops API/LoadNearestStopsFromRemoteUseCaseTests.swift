@@ -198,7 +198,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     private func makeInvalidRequestJSON() -> Data {
-        return makeJSON(code: "90", description: "a description", nil)
+        return makeJSON(code: "90", description: "a description", [])
     }
     
     private func failure(_ error: RemoteNearestStopsLoader.Error) -> RemoteNearestStopsLoader.Result {
