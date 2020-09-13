@@ -46,7 +46,6 @@ Then the app should display a list of the nearest stops to the user's current lo
 
 #### Wrong request - error course (sad path):
 1. System delivers error.
-2. System emmits an analytics error event.
 
 ## Flowchart
 
@@ -60,15 +59,15 @@ Not available.
 
 ### Nearest Stop
 
-| Property      | Type          |
-|---------------|---------------|
-| `id`          | `Int`         |
-| `latitude`    | `Double`      |
-| `longitude`   | `Double`      |
-| `name`        | `String`      |
-| `address`     | `String`      |
-| `distance`    | `Int`         |
-| `lines`       | `[NSL]`       | An array of Nearest Stop Line objects
+| Property              | Type          |
+|-----------------------|---------------|
+| `id`                  | `Int`         |
+| `latitude`            | `Double`      |
+| `longitude`           | `Double`      |
+| `name`                | `String`      |
+| `address`             | `String`      |
+| `distanceInMeters`    | `Int`         |
+| `lines`               | `[NSL]`       | An array of Nearest Stop Line objects
  
 ### Nearest Stop Line
 
