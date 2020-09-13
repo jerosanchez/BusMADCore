@@ -14,22 +14,26 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_requestsDataFromURL() {
+        let longitude = 1.0
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load() { _ in }
+        sut.load(longitude: longitude) { _ in }
 
-        XCTAssertEqual(client.requestedURLs, [url])
+        let expectedURL = url.appendingPathComponent("\(longitude)", isDirectory: true)
+        XCTAssertEqual(client.requestedURLs, [expectedURL])
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
+        let longitude = 1.0
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load() { _ in }
-        sut.load() { _ in }
+        sut.load(longitude: 1.0) { _ in }
+        sut.load(longitude: 1.0) { _ in }
 
-        XCTAssertEqual(client.requestedURLs, [url, url])
+        let expectedURL = url.appendingPathComponent("\(longitude)", isDirectory: true)
+        XCTAssertEqual(client.requestedURLs, [expectedURL, expectedURL])
     }
     
     func test_load_deliversErrorOnHTTPError() {
@@ -103,7 +107,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         var sut: RemoteNearestStopsLoader? = RemoteNearestStopsLoader(url: url, client: client)
 
         var capturedResults = [RemoteNearestStopsLoader.Result]()
-        sut?.load() { capturedResults.append($0) }
+        sut?.load(longitude: 1.0) { capturedResults.append($0) }
         
         sut = nil
         client.complete(withStatusCode: 200, data: makeEmptyJSON())
@@ -187,7 +191,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
 
-        sut.load() { receivedResult in
+        sut.load(longitude: 1.0) { receivedResult in
             switch (receivedResult, expectedResult) {
             case let (.success(receivedStops), .success(expectedStops)):
                 XCTAssertEqual(receivedStops, expectedStops, file: file, line: line)
