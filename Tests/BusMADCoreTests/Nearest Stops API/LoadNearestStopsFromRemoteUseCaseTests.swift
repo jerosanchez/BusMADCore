@@ -17,7 +17,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load(longitude: 1.0) { _ in }
+        sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 1)
     }
@@ -26,21 +26,25 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load(longitude: 1.0) { _ in }
-        sut.load(longitude: 1.0) { _ in }
+        sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
+        sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 2)
     }
     
     func test_load_usesAnURLWithProperPathComponents() {
+        let latitude = 1.0
         let longitude = 1.0
+        let radius = 1
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load(longitude: longitude) { _ in }
+        sut.load(latitude: latitude, longitude: longitude, radius: radius) { _ in }
         
         let expectedURL = url
             .appendingPathComponent("\(longitude)", isDirectory: true)
+            .appendingPathComponent("\(latitude)", isDirectory: true)
+            .appendingPathComponent("\(radius)", isDirectory: true)
         
         XCTAssertEqual(client.requestedURLs, [expectedURL])
     }
@@ -116,7 +120,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         var sut: RemoteNearestStopsLoader? = RemoteNearestStopsLoader(url: url, client: client)
 
         var capturedResults = [RemoteNearestStopsLoader.Result]()
-        sut?.load(longitude: 1.0) { capturedResults.append($0) }
+        sut?.load(latitude: 1.0, longitude: 1.0, radius: 1) { capturedResults.append($0) }
         
         sut = nil
         client.complete(withStatusCode: 200, data: makeEmptyJSON())
@@ -200,7 +204,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     private func expect(_ sut: RemoteNearestStopsLoader, toCompleteWith expectedResult: RemoteNearestStopsLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
 
-        sut.load(longitude: 1.0) { receivedResult in
+        sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { receivedResult in
             switch (receivedResult, expectedResult) {
             case let (.success(receivedStops), .success(expectedStops)):
                 XCTAssertEqual(receivedStops, expectedStops, file: file, line: line)

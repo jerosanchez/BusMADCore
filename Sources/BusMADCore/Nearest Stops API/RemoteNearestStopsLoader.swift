@@ -25,9 +25,12 @@ public class RemoteNearestStopsLoader {
         self.client = client
     }
     
-    public func load(longitude: Double, completion: @escaping (Result) -> Void) {
-        let url = self.url.appendingPathComponent("/\(longitude)", isDirectory: true)
-        
+    public func load(latitude: Double, longitude: Double, radius: Int, completion: @escaping (Result) -> Void) {
+        let url = self.url
+            .appendingPathComponent("/\(longitude)", isDirectory: true)
+            .appendingPathComponent("\(latitude)", isDirectory: true)
+            .appendingPathComponent("\(radius)", isDirectory: true)
+
         client.get(from: url) { [weak self] result in
             guard self != nil else { return }
             
