@@ -4,11 +4,11 @@
 
 import Foundation
 
-enum LoadNearestStopsResult {
+public enum LoadNearestStopsResult {
     case success([NearestStop])
     case failure(Error)
 }
 
-protocol NearestStopsLoader {
+public protocol NearestStopsLoader {
     func load(latitude: Double, longitude: Double, radius: Int, completion: @escaping (LoadNearestStopsResult) -> Void)
 }

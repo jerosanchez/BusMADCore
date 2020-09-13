@@ -18,14 +18,14 @@ internal class NearestStopsMapper {
                 return .success(stops)
             } else {
                 if root.code == "80" {
-                    return .failure(.expiredSession)
+                    return .failure(RemoteNearestStopsLoader.Error.expiredSession)
                 } else {
-                    return .failure(.invalidRequest)
+                    return .failure(RemoteNearestStopsLoader.Error.invalidRequest)
                 }
             }
             
         } else {
-            return .failure(.invalidData)
+            return .failure(RemoteNearestStopsLoader.Error.invalidData)
         }
     }
 }

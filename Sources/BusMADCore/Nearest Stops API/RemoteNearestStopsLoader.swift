@@ -4,21 +4,18 @@
 
 import Foundation
 
-public class RemoteNearestStopsLoader {
+public class RemoteNearestStopsLoader: NearestStopsLoader {
     private let url: URL
     private let client: HTTPClient
     
-    public enum Error {
+    public enum Error: Swift.Error {
         case connectivity
         case invalidData
         case expiredSession
         case invalidRequest
     }
     
-    public enum Result {
-        case success([NearestStop])
-        case failure(Error)
-    }
+    public typealias Result = LoadNearestStopsResult
     
     public init(url: URL, client: HTTPClient) {
         self.url = url
@@ -38,7 +35,7 @@ public class RemoteNearestStopsLoader {
             case let .success(data, response):
                 completion(NearestStopsMapper.map(data, with: response))
             case .failure:
-                completion(.failure(.connectivity))
+                completion(.failure(Error.connectivity))
             }
         }
     }

@@ -53,7 +53,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let anyError = NSError(domain: "any error", code: 0)
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.connectivity), when: {
+        expect(sut, toCompleteWith: .failure(RemoteNearestStopsLoader.Error.connectivity), when: {
             client.complete(withError: anyError)
         })
     }
@@ -64,7 +64,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let samples = [199, 201, 300, 400, 500]
         
         samples.enumerated().forEach { index, code in
-            expect(sut, toCompleteWith: .failure(.invalidData), when: {
+            expect(sut, toCompleteWith: .failure(RemoteNearestStopsLoader.Error.invalidData), when: {
                 client.complete(withStatusCode: code, data: makeEmptyJSON(), at: index)
             })
         }
@@ -73,7 +73,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     func test_load_deliversErrorOn200HTTPRequestWithInvalidJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.invalidData), when: {
+        expect(sut, toCompleteWith: .failure(RemoteNearestStopsLoader.Error.invalidData), when: {
             let invalidJSON = "invalid JSON".data(using: .utf8)!
             client.complete(withStatusCode: 200, data: invalidJSON)
         })
@@ -82,7 +82,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     func test_load_deliversErrorOn200HTTPRequestWithExpiredSessionJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.expiredSession), when: {
+        expect(sut, toCompleteWith: .failure(RemoteNearestStopsLoader.Error.expiredSession), when: {
             client.complete(withStatusCode: 200, data: makeExpiredSessionJSON())
         })
     }
@@ -90,7 +90,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     func test_load_deliversErrorOn200HTTPRequestWithInvalidRequestJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.invalidRequest), when: {
+        expect(sut, toCompleteWith: .failure(RemoteNearestStopsLoader.Error.invalidRequest), when: {
             client.complete(withStatusCode: 200, data: makeInvalidRequestJSON())
         })
     }
@@ -208,8 +208,8 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
             switch (receivedResult, expectedResult) {
             case let (.success(receivedStops), .success(expectedStops)):
                 XCTAssertEqual(receivedStops, expectedStops, file: file, line: line)
-            case let (.failure(receivedError), .failure(expectedError)):
-                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
+            case let (.failure(receivedError as RemoteNearestStopsLoader.Error), .failure(expectedError as RemoteNearestStopsLoader.Error)):
+                XCTAssertEqual(receivedError , expectedError, file: file, line: line)
             default:
                 XCTFail("Expected result \(expectedResult), got \(receivedResult) instead.", file: file, line: line)
             }
