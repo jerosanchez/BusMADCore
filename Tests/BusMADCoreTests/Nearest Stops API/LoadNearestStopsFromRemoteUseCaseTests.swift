@@ -20,7 +20,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
 
         sut.load(longitude: longitude) { _ in }
 
-        let expectedURL = url.appendingPathComponent("\(longitude)", isDirectory: true)
+        let expectedURL = makeExpectedURL(url, longitude: longitude)
         XCTAssertEqual(client.requestedURLs, [expectedURL])
     }
     
@@ -32,7 +32,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         sut.load(longitude: 1.0) { _ in }
         sut.load(longitude: 1.0) { _ in }
 
-        let expectedURL = url.appendingPathComponent("\(longitude)", isDirectory: true)
+        let expectedURL = makeExpectedURL(url, longitude: longitude)
         XCTAssertEqual(client.requestedURLs, [expectedURL, expectedURL])
     }
     
@@ -129,6 +129,10 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         addTeardownBlock { [weak instance] in
             XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
         }
+    }
+    
+    private func makeExpectedURL(_ url: URL, longitude: Double) -> URL {
+        return url.appendingPathComponent("\(longitude)", isDirectory: true)
     }
     
     private func makeStop(id: Int) -> (model: NearestStop, json: [String: Any]){
