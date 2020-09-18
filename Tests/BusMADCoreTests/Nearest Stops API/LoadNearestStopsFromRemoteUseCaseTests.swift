@@ -138,12 +138,6 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return (sut, client)
     }
     
-    private func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #file, line: UInt = #line) {
-        addTeardownBlock { [weak instance] in
-            XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
-        }
-    }
-    
     private func makeStop(id: Int) -> (model: NearestStop, json: [String: Any]){
         let line1 = NearestStopLine(id: 1, origin: "line1 origin", destination: "line1 destination")
         let line2 = NearestStopLine(id: 2, origin: "line2 origin", destination: "line2 destionation")
