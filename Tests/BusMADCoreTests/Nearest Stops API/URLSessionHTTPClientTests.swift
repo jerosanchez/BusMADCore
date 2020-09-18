@@ -12,10 +12,14 @@ class URLSessionHTTPClient {
         self.session = session
     }
     
+    struct UnexpectedValuesRepresentation: Error { }
+    
     func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
         session.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
+            } else {
+                completion(.failure(UnexpectedValuesRepresentation()))
             }
         }.resume()
     }
@@ -48,7 +52,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         let url = URL(string: "https://a-url.com")!
         let sut = URLSessionHTTPClient()
         let requestError = NSError(domain: "any error", code: 0, userInfo: nil)
-        URLProtocolStub.stub(error: requestError)
+        URLProtocolStub.stub(data: nil, response: nil, error: requestError)
         
         let exp = expectation(description: "Wait for request")
         
@@ -66,14 +70,42 @@ class URLSessionHTTPClientTests: XCTestCase {
         URLProtocol.unregisterClass(URLProtocolStub.self)
     }
     
+    func test_getFromURL_failsOnRequestWithNoDataNoResponseAndNoError() {
+        URLProtocol.registerClass(URLProtocolStub.self)
+        let url = URL(string: "https://a-url.com")!
+        let sut = URLSessionHTTPClient()
+        URLProtocolStub.stub(data: nil, response: nil, error: nil)
+        
+        let exp = expectation(description: "Wait for request")
+        
+        sut.get(from: url) { result in
+            switch result {
+            case let .failure(receivedError):
+                XCTAssertNotNil(receivedError)
+            default:
+                XCTFail("Expected failure, got \(result) instead.")
+            }
+            exp.fulfill()
+        }
+
+        wait(for: [exp], timeout: 1.0)
+        URLProtocol.unregisterClass(URLProtocolStub.self)
+    }
+    
     // MARK: Helpers
     
     class URLProtocolStub: URLProtocol {
-        private static var error: Error?
+        private static var stub: Stub?
         private static var requestObserver: ((URLRequest) -> Void)?
         
-        static func stub(error: Error) {
-            URLProtocolStub.error = error
+        private struct Stub {
+            let data: Data?
+            let response: URLResponse?
+            let error: Error?
+        }
+        
+        static func stub(data: Data?, response: URLResponse?, error: Error?) {
+            URLProtocolStub.stub = Stub(data: data, response: response, error: error)
         }
         
         static func observeRequest(observer: @escaping (URLRequest) -> Void) {
@@ -90,8 +122,16 @@ class URLSessionHTTPClientTests: XCTestCase {
         
         override func startLoading() {
             URLProtocolStub.requestObserver?(request)
+
+            if let data = URLProtocolStub.stub?.data {
+                client?.urlProtocol(self, didLoad: data)
+            }
             
-            if let error = URLProtocolStub.error {
+            if let response = URLProtocolStub.stub?.response {
+                client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            }
+
+            if let error = URLProtocolStub.stub?.error {
                 client?.urlProtocol(self, didFailWithError: error)
             }
             
