@@ -50,18 +50,17 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_failsOnRequestError() {
         URLProtocol.registerClass(URLProtocolStub.self)
         let url = URL(string: "https://a-url.com")!
-        let sut = URLSessionHTTPClient()
         let requestError = NSError(domain: "any error", code: 0, userInfo: nil)
         URLProtocolStub.stub(data: nil, response: nil, error: requestError)
         
         let exp = expectation(description: "Wait for request")
         
-        sut.get(from: url) { result in
+        makeSUT().get(from: url) { result in
             switch result {
             case let .failure(receivedError as NSError):
                 XCTAssertEqual(receivedError, requestError)
             default:
-                XCTFail("Expected \(requestError) error, got \(result) instead.")
+                XCTFail("Expected failure, got \(result) instead.")
             }
             exp.fulfill()
         }
@@ -73,12 +72,11 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_failsOnRequestWithNoDataNoResponseAndNoError() {
         URLProtocol.registerClass(URLProtocolStub.self)
         let url = URL(string: "https://a-url.com")!
-        let sut = URLSessionHTTPClient()
         URLProtocolStub.stub(data: nil, response: nil, error: nil)
         
         let exp = expectation(description: "Wait for request")
         
-        sut.get(from: url) { result in
+        makeSUT().get(from: url) { result in
             switch result {
             case let .failure(receivedError):
                 XCTAssertNotNil(receivedError)
@@ -93,6 +91,11 @@ class URLSessionHTTPClientTests: XCTestCase {
     }
     
     // MARK: Helpers
+    
+    private func makeSUT() -> URLSessionHTTPClient {
+        let sut = URLSessionHTTPClient()
+        return sut
+    }
     
     class URLProtocolStub: URLProtocol {
         private static var stub: Stub?
