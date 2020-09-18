@@ -30,7 +30,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_performsGETRequestWithURL() {
         URLProtocol.registerClass(URLProtocolStub.self)
         let url = anyURL()
-        let sut = URLSessionHTTPClient()
+        let sut = makeSUT()
         
         let exp = expectation(description: "Wait for request")
         
