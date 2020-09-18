@@ -170,5 +170,6 @@ class URLSessionHTTPClientTests: XCTestCase {
     static var allTests = [
         ("test_getFromURL_performsGETRequestWithURL", test_getFromURL_performsGETRequestWithURL),
         ("test_getFromURL_failsOnRequestError", test_getFromURL_failsOnRequestError),
+        ("test_getFromURL_failsOnAllInvalidRepresentationCases", test_getFromURL_failsOnAllInvalidRepresentationCases),
     ]
 }
