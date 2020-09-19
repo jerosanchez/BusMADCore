@@ -27,8 +27,19 @@ class URLSessionHTTPClient {
 
 class URLSessionHTTPClientTests: XCTestCase {
     
+    override func setUp() {
+        super.setUp()
+        
+        URLProtocolStub.startInterceptingRequests()
+    }
+    
+    override func tearDown() {
+        URLProtocolStub.stopInterceptingRequests()
+        
+        super.tearDown()
+    }
+    
     func test_getFromURL_performsGETRequestWithURL() {
-        URLProtocol.registerClass(URLProtocolStub.self)
         let url = anyURL()
         let sut = makeSUT()
         
@@ -44,7 +55,6 @@ class URLSessionHTTPClientTests: XCTestCase {
         sut.get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1.0)
-        URLProtocol.unregisterClass(URLProtocolStub.self)
     }
     
     func test_getFromURL_failsOnRequestError() {
@@ -67,6 +77,17 @@ class URLSessionHTTPClientTests: XCTestCase {
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nonHTTPURLResponse(), error: nil))
     }
     
+//    func test_getFromURL_succeedsOnHTTPURLResponseWithData() {
+//        let data = anyData()
+//        let response = anyHTTPURLResponse()
+//
+//        let receivedResult = resultValuesFor(data: data, response: response, error: nil)
+//
+//        XCTAssertEqual(receivedResult?.data, data)
+//        XCTAssertEqual(receivedResult?.response.url, response.url)
+//        XCTAssertEqual(receivedResult?.response.statusCode, response.statusCode)
+//    }
+    
     // MARK: Helpers
     
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> URLSessionHTTPClient {
@@ -76,7 +97,6 @@ class URLSessionHTTPClientTests: XCTestCase {
     }
     
     private func resultErrorFor(data: Data?, response: URLResponse?, error: Error?) -> Error? {
-        URLProtocol.registerClass(URLProtocolStub.self)
         URLProtocolStub.stub(data: data, response: response, error: error)
         
         let exp = expectation(description: "Wait for request")
@@ -93,11 +113,30 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
 
         wait(for: [exp], timeout: 1.0)
-        URLProtocol.unregisterClass(URLProtocolStub.self)
         
         return receivedError
     }
     
+//    private func resultValuesFor(data: Data?, response: URLResponse?, error: Error?) -> (data: Data, response: HTTPURLResponse)? {
+//        URLProtocol.registerClass(URLProtocolStub.self)
+//        let exp = expectation(description: "Wait for request values")
+//
+//        var receivedValues: (Data, HTTPURLResponse)?
+//        makeSUT().get(from: anyURL()) { result in
+//            switch result {
+//            case let .success(receivedData, receivedResponse):
+//                receivedValues = (receivedData, receivedResponse)
+//            default:
+//                XCTFail("Expected success, got \(result) instead.")
+//            }
+//            exp.fulfill()
+//        }
+//
+//        wait(for: [exp], timeout: 1.0)
+//
+//        return receivedValues
+//    }
+//
     private func anyURL() -> URL {
         return URL(string: "https://any-url.com")!
     }
@@ -134,6 +173,16 @@ class URLSessionHTTPClientTests: XCTestCase {
         
         static func observeRequest(observer: @escaping (URLRequest) -> Void) {
             requestObserver = observer
+        }
+        
+        static func startInterceptingRequests() {
+            URLProtocol.registerClass(URLProtocolStub.self)
+        }
+        
+        static func stopInterceptingRequests() {
+            URLProtocol.unregisterClass(URLProtocolStub.self)
+            stub = nil
+            requestObserver = nil
         }
 
         override class func canInit(with request: URLRequest) -> Bool {
