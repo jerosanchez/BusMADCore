@@ -18,6 +18,8 @@ class URLSessionHTTPClient {
         session.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
+            } else if let data = data, let response = response as? HTTPURLResponse {
+                completion(.success(data, response))
             } else {
                 completion(.failure(UnexpectedValuesRepresentation()))
             }
@@ -77,16 +79,16 @@ class URLSessionHTTPClientTests: XCTestCase {
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nonHTTPURLResponse(), error: nil))
     }
     
-//    func test_getFromURL_succeedsOnHTTPURLResponseWithData() {
-//        let data = anyData()
-//        let response = anyHTTPURLResponse()
-//
-//        let receivedResult = resultValuesFor(data: data, response: response, error: nil)
-//
-//        XCTAssertEqual(receivedResult?.data, data)
-//        XCTAssertEqual(receivedResult?.response.url, response.url)
-//        XCTAssertEqual(receivedResult?.response.statusCode, response.statusCode)
-//    }
+    func test_getFromURL_succeedsOnHTTPURLResponseWithData() {
+        let data = anyData()
+        let response = anyHTTPURLResponse()
+
+        let receivedResult = resultValuesFor(data: data, response: response, error: nil)
+
+        XCTAssertEqual(receivedResult?.data, data)
+        XCTAssertEqual(receivedResult?.response.url, response.url)
+        XCTAssertEqual(receivedResult?.response.statusCode, response.statusCode)
+    }
     
     // MARK: Helpers
     
@@ -117,26 +119,28 @@ class URLSessionHTTPClientTests: XCTestCase {
         return receivedError
     }
     
-//    private func resultValuesFor(data: Data?, response: URLResponse?, error: Error?) -> (data: Data, response: HTTPURLResponse)? {
-//        URLProtocol.registerClass(URLProtocolStub.self)
-//        let exp = expectation(description: "Wait for request values")
-//
-//        var receivedValues: (Data, HTTPURLResponse)?
-//        makeSUT().get(from: anyURL()) { result in
-//            switch result {
-//            case let .success(receivedData, receivedResponse):
-//                receivedValues = (receivedData, receivedResponse)
-//            default:
-//                XCTFail("Expected success, got \(result) instead.")
-//            }
-//            exp.fulfill()
-//        }
-//
-//        wait(for: [exp], timeout: 1.0)
-//
-//        return receivedValues
-//    }
-//
+    private func resultValuesFor(data: Data?, response: URLResponse?, error: Error?) -> (data: Data, response: HTTPURLResponse)? {
+        URLProtocol.registerClass(URLProtocolStub.self)
+        URLProtocolStub.stub(data: data, response: response, error: error)
+
+        let exp = expectation(description: "Wait for request values")
+
+        var receivedValues: (Data, HTTPURLResponse)?
+        makeSUT().get(from: anyURL()) { result in
+            switch result {
+            case let .success(receivedData, receivedResponse):
+                receivedValues = (receivedData, receivedResponse)
+            default:
+                XCTFail("Expected success, got \(result) instead.")
+            }
+            exp.fulfill()
+        }
+
+        wait(for: [exp], timeout: 1.0)
+
+        return receivedValues
+    }
+
     private func anyURL() -> URL {
         return URL(string: "https://any-url.com")!
     }
