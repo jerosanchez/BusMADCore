@@ -14,7 +14,17 @@ public class URLSessionHTTPClient: HTTPClient {
     public struct UnexpectedValuesRepresentation: Error { }
     
     public func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
-        session.dataTask(with: url) { data, response, error in
+        get(from: url, headers: [:], completion: completion)
+    }
+    
+    public func get(from url: URL, headers: [String: String], completion: @escaping (HTTPClientResult) -> Void) {
+        var request = URLRequest(url: url)
+        
+        headers.forEach() { key, value in
+            request.addValue(value, forHTTPHeaderField: key)
+        }
+        
+        session.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
             } else if let data = data, let response = response as? HTTPURLResponse {

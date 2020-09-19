@@ -37,6 +37,30 @@ class URLSessionHTTPClientTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
     
+    func test_getFromURL_performsGETRequestWithURLAndHeaders() {
+        let url = anyURL()
+        let sut = makeSUT()
+        let headers = ["header": "value"]
+        
+        let exp = expectation(description: "Wait for request")
+        
+        URLProtocolStub.observeRequest { request in
+            XCTAssertEqual(request.httpMethod, "GET")
+            XCTAssertEqual(request.url, url)
+            
+            XCTAssertEqual(request.allHTTPHeaderFields?.count, headers.count)
+            request.allHTTPHeaderFields?.forEach() { key, value in
+                XCTAssertEqual(request.allHTTPHeaderFields?[key], headers[key])
+            }
+            
+            exp.fulfill()
+        }
+        
+        sut.get(from: url, headers: headers) { _ in }
+        
+        wait(for: [exp], timeout: 1.0)
+    }
+    
     func test_getFromURL_failsOnRequestError() {
         let requestError = anyNSError()
         
@@ -70,7 +94,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     
     // MARK: Helpers
     
-    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> HTTPClient {
+    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> URLSessionHTTPClient {
         let sut = URLSessionHTTPClient()
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
@@ -205,6 +229,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     
     static var allTests = [
         ("test_getFromURL_performsGETRequestWithURL", test_getFromURL_performsGETRequestWithURL),
+        ("test_getFromURL_performsGETRequestWithURLAndHeaders", test_getFromURL_performsGETRequestWithURLAndHeaders),
         ("test_getFromURL_failsOnRequestError", test_getFromURL_failsOnRequestError),
         ("test_getFromURL_failsOnAllInvalidRepresentationCases", test_getFromURL_failsOnAllInvalidRepresentationCases),
         ("test_getFromURL_succeedsOnHTTPURLResponseWithData", test_getFromURL_succeedsOnHTTPURLResponseWithData),
