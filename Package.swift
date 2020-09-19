@@ -24,5 +24,8 @@ let package = Package(
         .testTarget(
             name: "BusMADCoreTests",
             dependencies: ["BusMADCore"]),
+        .testTarget(
+            name: "EndToEndTests",
+            dependencies: ["BusMADCore"]),
     ]
 )
