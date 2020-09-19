@@ -4,7 +4,7 @@ import XCTest
 public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(LoadNearestStopsFromRemoteUseCaseTests.allTests),
-        testCase(URLSessionHTTPClientTests),
+        testCase(URLSessionHTTPClientTests.allTests),
     ]
 }
 #endif
