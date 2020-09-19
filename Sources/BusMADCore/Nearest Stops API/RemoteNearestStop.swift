@@ -31,7 +31,7 @@ internal struct RemoteGeometry: Decodable {
 }
 
 internal struct RemoteNearestStopLine: Decodable {
-    internal let line: Int
+    internal let line: String
     internal let nameA: String
     internal let nameB: String
 }

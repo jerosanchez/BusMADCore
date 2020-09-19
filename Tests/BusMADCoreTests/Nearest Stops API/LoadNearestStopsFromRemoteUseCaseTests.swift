@@ -139,8 +139,8 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     private func makeStop(id: Int) -> (model: NearestStop, json: [String: Any]){
-        let line1 = NearestStopLine(id: 1, origin: "line1 origin", destination: "line1 destination")
-        let line2 = NearestStopLine(id: 2, origin: "line2 origin", destination: "line2 destionation")
+        let line1 = NearestStopLine(id: "1", origin: "line1 origin", destination: "line1 destination")
+        let line2 = NearestStopLine(id: "2", origin: "line2 origin", destination: "line2 destination")
 
         let stop = NearestStop(id: id, latitude: 1.0, longitude: 1.0, name: "a name", address: "an address", distanceInMeters: 1, lines: [line1, line2])
         
