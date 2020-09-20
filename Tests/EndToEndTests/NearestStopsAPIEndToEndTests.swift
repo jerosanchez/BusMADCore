@@ -8,6 +8,21 @@ import BusMADCore
 class NearestStopsAPIEndToEndTests: XCTestCase {
     
     func test_endToEndGETNearestStopsResult_matchesExpectedData() {
+        switch getNearestStopsResult() {
+        case let .success(stops)?:
+            XCTAssertEqual(stops.count, 3, "Expected 3 stops in the result")
+            
+        case let .failure(error)?:
+            XCTFail("Expected successfull load result, got \(error) instead.")
+            
+        default:
+            XCTFail("Expected successfull load result, got no result instead.")
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private func getNearestStopsResult() -> LoadNearestStopsResult? {
         let latitude = 40.385558
         let longitude = -3.640491
         let radius = 200
@@ -24,15 +39,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         }
         
         wait(for: [exp], timeout: 5.0)
-        
-        switch receivedResult {
-        case let .success(stops)?:
-            XCTAssertEqual(stops.count, 3)
-        case let .failure(error)?:
-            XCTFail("Expected successfull load result, got \(error) instead.")
-        default:
-            XCTFail("Expected successfull load result, got no result instead.")
-        }
+        return receivedResult
     }
 }
 
