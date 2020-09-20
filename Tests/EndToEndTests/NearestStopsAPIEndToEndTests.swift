@@ -22,7 +22,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func getNearestStopsResult() -> LoadNearestStopsResult? {
+    private func getNearestStopsResult(file: StaticString = #file, line: UInt = #line) -> LoadNearestStopsResult? {
         let latitude = 40.385558
         let longitude = -3.640491
         let radius = 200
@@ -30,6 +30,9 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         let client = SignedURLSessionHTTPClient()
         let loader = RemoteNearestStopsLoader(url: serviceURL, client: client)
         
+        trackForMemoryLeaks(client, file: file, line: line)
+        trackForMemoryLeaks(loader, file: file, line: line)
+
         let exp = expectation(description: "Wait for load completion")
         
         var receivedResult: LoadNearestStopsResult?
@@ -40,6 +43,12 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         
         wait(for: [exp], timeout: 5.0)
         return receivedResult
+    }
+    
+    func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #file, line: UInt = #line) {
+        addTeardownBlock { [weak instance] in
+            XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
+        }
     }
 }
 
