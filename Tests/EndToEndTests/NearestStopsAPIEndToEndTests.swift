@@ -23,9 +23,9 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     // MARK: - Helpers
     
     private func getNearestStopsResult(file: StaticString = #file, line: UInt = #line) -> LoadNearestStopsResult? {
-        let latitude = 40.385558
-        let longitude = -3.640491
-        let radius = 200
+        let latitude = 40.417008
+        let longitude = -3.705487
+        let radius = 350
         let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy")!
         let client = SignedURLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
         let loader = RemoteNearestStopsLoader(url: serviceURL, client: client)
