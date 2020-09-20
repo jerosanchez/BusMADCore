@@ -27,7 +27,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         let longitude = -3.640491
         let radius = 200
         let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy")!
-        let client = SignedURLSessionHTTPClient()
+        let client = SignedURLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
         let loader = RemoteNearestStopsLoader(url: serviceURL, client: client)
         
         trackForMemoryLeaks(client, file: file, line: line)
