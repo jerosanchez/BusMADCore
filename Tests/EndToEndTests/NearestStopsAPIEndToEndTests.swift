@@ -27,7 +27,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         let longitude = -3.640491
         let radius = 200
         let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy")!
-        let client = URLSessionHTTPClientSigned()
+        let client = SignedURLSessionHTTPClient()
         let loader = RemoteNearestStopsLoader(url: serviceURL, client: client)
         
         let exp = expectation(description: "Wait for load completion")
@@ -43,7 +43,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     }
 }
 
-private class URLSessionHTTPClientSigned: URLSessionHTTPClient {
+private class SignedURLSessionHTTPClient: URLSessionHTTPClient {
     override func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
         let headers = ["accessToken": ACCESS_TOKEN]
         get(from: url, headers: headers, completion: completion)
