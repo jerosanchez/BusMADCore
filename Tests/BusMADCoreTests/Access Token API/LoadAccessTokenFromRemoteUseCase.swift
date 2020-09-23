@@ -20,9 +20,8 @@ class RemoteAccessTokenLoader {
 class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     func test_init_doesNotRequestDataFromURL() {
-        let client = HTTPClientSpy()
-        let _ = RemoteAccessTokenLoader(client: client)
-        
+        let (_, client) = makeSUT()
+
         XCTAssertTrue(client.requestedURLs.isEmpty)
     }
     
@@ -30,9 +29,8 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let url = anyURL()
         let clientId = "clientId"
         let passKey = "pass key"
-        let client = HTTPClientSpy()
-        let sut = RemoteAccessTokenLoader(client: client)
-        
+        let (sut, client) = makeSUT()
+
         sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
         
         XCTAssertEqual(client.requestedURLs, [url])
@@ -42,13 +40,21 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let url = anyURL()
         let clientId = "clientId"
         let passKey = "pass key"
-        let client = HTTPClientSpy()
-        let sut = RemoteAccessTokenLoader(client: client)
+        let (sut, client) = makeSUT()
 
         sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
         sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 2)
+    }
+    
+    // MARK: - Helpers
+    
+    private func makeSUT() -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
+        let client = HTTPClientSpy()
+        let sut = RemoteAccessTokenLoader(client: client)
+        
+        return (sut, client)
     }
     
     // MARK: - Linux compatibility
