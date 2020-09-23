@@ -6,13 +6,18 @@ import Foundation
 import BusMADCore
 
 class HTTPClientSpy: HTTPClient {
-    private var messages = [(url: URL, completion: (HTTPClientResult) -> Void)]()
+    private var messages = [Message]()
     var requestedURLs: [URL] {
         messages.map { $0.url }
     }
     
+    struct Message {
+        let url: URL
+        let completion: (HTTPClientResult) -> Void
+    }
+
     func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
-        messages.append((url, completion))
+        messages.append(Message(url: url, completion: completion))
     }
     
     func complete(withError error: Error, at index: Int = 0) {
