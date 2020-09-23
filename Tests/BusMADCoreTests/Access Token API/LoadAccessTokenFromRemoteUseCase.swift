@@ -50,10 +50,13 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     // MARK: - Helpers
     
-    private func makeSUT() -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
+    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
         let sut = RemoteAccessTokenLoader(client: client)
         
+        trackForMemoryLeaks(sut, file: file, line: line)
+        trackForMemoryLeaks(client, file: file, line: line)
+
         return (sut, client)
     }
     
