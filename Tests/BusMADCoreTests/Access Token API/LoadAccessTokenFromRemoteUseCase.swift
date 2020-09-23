@@ -69,5 +69,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     static var allTests = [
         ("test_init_doesNotRequestDataFromURL", test_init_doesNotRequestDataFromURL),
+        ("test_load_requestsDataFromURL", test_load_requestsDataFromURL),
+        ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
     ]
 }
