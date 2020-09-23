@@ -27,7 +27,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     }
     
     func test_load_requestsDataFromURL() {
-        let url = URL(string: "https://a-url.com")!
+        let url = anyURL()
         let clientId = "clientId"
         let passKey = "pass key"
         let client = HTTPClientSpy()

@@ -14,8 +14,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_requestsDataFromURL() {
-        let url = URL(string: "https://a-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
 
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
 
@@ -23,8 +22,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
-        let url = URL(string: "https://a-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
 
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
@@ -36,7 +34,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         let latitude = 1.0
         let longitude = 1.0
         let radius = 1
-        let url = URL(string: "https://a-url.com")!
+        let url = anyURL()
         let (sut, client) = makeSUT(url: url)
 
         sut.load(latitude: latitude, longitude: longitude, radius: radius) { _ in }
@@ -115,7 +113,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated() {
-        let url = URL(string: "https://a-url.com")!
+        let url = anyURL()
         let client = HTTPClientSpy()
         var sut: RemoteNearestStopsLoader? = RemoteNearestStopsLoader(url: url, client: client)
 
@@ -130,7 +128,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func makeSUT(url: URL = URL(string: "https://a-url.com")!, file: StaticString = #file, line: UInt = #line) -> (sut: RemoteNearestStopsLoader, client: HTTPClientSpy) {
+    private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteNearestStopsLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
         let sut = RemoteNearestStopsLoader(url: url, client: client)
         trackForMemoryLeaks(sut, file: file, line: line)
