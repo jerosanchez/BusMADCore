@@ -6,13 +6,15 @@ import XCTest
 import BusMADCore
 
 class RemoteAccessTokenLoader {
+    private let url: URL
     private let client: HTTPClient
     
-    init(client: HTTPClient) {
+    init(from url: URL, client: HTTPClient) {
+        self.url = url
         self.client = client
     }
     
-    func load(from url: URL, clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
+    func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
         client.get(from: url) { _ in }
     }
 }
@@ -29,30 +31,29 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let url = anyURL()
         let clientId = "clientId"
         let passKey = "pass key"
-        let (sut, client) = makeSUT()
+        let (sut, client) = makeSUT(url: url)
 
-        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
+        sut.load(clientId: clientId, passKey: passKey) { _ in }
         
         XCTAssertEqual(client.requestedURLs, [url])
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
-        let url = anyURL()
         let clientId = "clientId"
         let passKey = "pass key"
         let (sut, client) = makeSUT()
 
-        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
-        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
+        sut.load(clientId: clientId, passKey: passKey) { _ in }
+        sut.load(clientId: clientId, passKey: passKey) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 2)
     }
     
     // MARK: - Helpers
     
-    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
+    private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
-        let sut = RemoteAccessTokenLoader(client: client)
+        let sut = RemoteAccessTokenLoader(from: url, client: client)
         
         trackForMemoryLeaks(sut, file: file, line: line)
         trackForMemoryLeaks(client, file: file, line: line)
