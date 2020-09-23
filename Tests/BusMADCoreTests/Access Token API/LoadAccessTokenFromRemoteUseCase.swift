@@ -29,22 +29,18 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     func test_load_requestsDataFromURL() {
         let url = anyURL()
-        let clientId = "clientId"
-        let passKey = "pass key"
         let (sut, client) = makeSUT(url: url)
 
-        sut.load(clientId: clientId, passKey: passKey) { _ in }
+        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { _ in }
         
         XCTAssertEqual(client.requestedURLs, [url])
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
-        let clientId = "clientId"
-        let passKey = "pass key"
         let (sut, client) = makeSUT()
 
-        sut.load(clientId: clientId, passKey: passKey) { _ in }
-        sut.load(clientId: clientId, passKey: passKey) { _ in }
+        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { _ in }
+        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 2)
     }
@@ -59,6 +55,14 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         trackForMemoryLeaks(client, file: file, line: line)
 
         return (sut, client)
+    }
+    
+    private func anyClientId() -> String {
+        return "a client Id"
+    }
+    
+    private func anyPassKey() -> String {
+        return "a pass key"
     }
     
     // MARK: - Linux compatibility
