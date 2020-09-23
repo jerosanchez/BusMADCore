@@ -5,23 +5,6 @@
 import XCTest
 import BusMADCore
 
-class RemoteAccessTokenLoader {
-    private let url: URL
-    private let client: HTTPClient
-    
-    init(from url: URL, client: HTTPClient) {
-        self.url = url
-        self.client = client
-    }
-    
-    func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
-        let headers = [
-            "clientId": clientId,
-            "passKey": passKey]
-        client.get(from: url, headers: headers) { _ in }
-    }
-}
-
 class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     func test_init_doesNotRequestDataFromURL() {
