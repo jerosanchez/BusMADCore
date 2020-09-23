@@ -10,14 +10,22 @@ class HTTPClientSpy: HTTPClient {
     var requestedURLs: [URL] {
         messages.map { $0.url }
     }
+    var headers: [[String: String]] {
+        messages.map { $0.headers }
+    }
     
     struct Message {
         let url: URL
+        let headers: [String: String]
         let completion: (HTTPClientResult) -> Void
     }
 
     func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
-        messages.append(Message(url: url, completion: completion))
+        messages.append(Message(url: url, headers: [:], completion: completion))
+    }
+    
+    func get(from url: URL, headers: [String: String], completion: @escaping (HTTPClientResult) -> Void) {
+        messages.append(Message(url: url, headers: headers, completion: completion))
     }
     
     func complete(withError error: Error, at index: Int = 0) {

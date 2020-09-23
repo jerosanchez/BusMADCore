@@ -15,7 +15,10 @@ class RemoteAccessTokenLoader {
     }
     
     func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
-        client.get(from: url) { _ in }
+        let headers = [
+            "clientId": clientId,
+            "passKey": passKey]
+        client.get(from: url, headers: headers) { _ in }
     }
 }
 
@@ -43,6 +46,16 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         sut.load(clientId: anyClientId(), passKey: anyPassKey()) { _ in }
 
         XCTAssertEqual(client.requestedURLs.count, 2)
+    }
+    
+    func test_load_requestsDataUsingCorrectHeaders() {
+        let clientId = anyClientId()
+        let passKey = anyPassKey()
+        let (sut, client) = makeSUT()
+
+        sut.load(clientId: clientId, passKey: passKey) { _ in }
+
+        XCTAssertEqual(client.headers.first!, ["clientId": clientId, "passKey": passKey])
     }
     
     // MARK: - Helpers
