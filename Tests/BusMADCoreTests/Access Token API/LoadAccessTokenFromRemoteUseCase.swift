@@ -38,6 +38,19 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         XCTAssertEqual(client.requestedURLs, [url])
     }
     
+    func test_loadTwice_requestsDataFromURLTwice() {
+        let url = anyURL()
+        let clientId = "clientId"
+        let passKey = "pass key"
+        let client = HTTPClientSpy()
+        let sut = RemoteAccessTokenLoader(client: client)
+
+        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
+        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
+
+        XCTAssertEqual(client.requestedURLs.count, 2)
+    }
+    
     // MARK: - Linux compatibility
     
     static var allTests = [
