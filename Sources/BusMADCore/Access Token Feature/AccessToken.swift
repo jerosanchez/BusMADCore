@@ -4,9 +4,9 @@
 
 import Foundation
 
-struct AccessToken {
-    let token: UUID
-    let expirationTime: Date
-    let dailyCallsLimit: Int
-    let todayCallsCount: Int
+public struct AccessToken {
+    public let token: UUID
+    public let expirationTime: Date
+    public let dailyCallsLimit: Int
+    public let todayCallsCount: Int
 }

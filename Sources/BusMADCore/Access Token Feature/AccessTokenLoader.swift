@@ -4,7 +4,7 @@
 
 import Foundation
 
-enum LoadAccessTokenResult {
+public enum LoadAccessTokenResult {
     case success(AccessToken)
     case failure(Error)
 }

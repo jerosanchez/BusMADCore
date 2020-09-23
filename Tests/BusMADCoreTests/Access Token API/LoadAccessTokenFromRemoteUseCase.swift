@@ -11,6 +11,10 @@ class RemoteAccessTokenLoader {
     init(client: HTTPClient) {
         self.client = client
     }
+    
+    func load(from url: URL, clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
+        client.get(from: url) { _ in }
+    }
 }
 
 class LoadAccessTokenFromRemoteUseCase: XCTestCase {
@@ -20,6 +24,18 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let _ = RemoteAccessTokenLoader(client: client)
         
         XCTAssertTrue(client.requestedURLs.isEmpty)
+    }
+    
+    func test_load_requestsDataFromURL() {
+        let url = URL(string: "https://a-url.com")!
+        let clientId = "clientId"
+        let passKey = "pass key"
+        let client = HTTPClientSpy()
+        let sut = RemoteAccessTokenLoader(client: client)
+        
+        sut.load(from: url, clientId: clientId, passKey: passKey) { _ in }
+        
+        XCTAssertEqual(client.requestedURLs, [url])
     }
     
     // MARK: - Linux compatibility
