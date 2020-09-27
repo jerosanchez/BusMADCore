@@ -63,6 +63,15 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         }
     }
     
+    func test_load_deliversErrorOn200HTTPResponseWithInvalidJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .invalidData, when: {
+            let invalidJSON = "invalid JSON".data(using: .utf8)!
+            client.complete(withStatusCode: 200, data: invalidJSON)
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
@@ -110,5 +119,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
         ("test_load_requestsDataUsingCorrectHeaders", test_load_requestsDataUsingCorrectHeaders),
         ("test_load_deliversErrorOnHTTPError", test_load_deliversErrorOnHTTPError),
+        ("test_load_deliversErrorOnNon200HTTPResponse", test_load_deliversErrorOnNon200HTTPResponse),
+        ("test_load_deliversErrorOn200HTTPResponseWithInvalidJSON", test_load_deliversErrorOn200HTTPResponseWithInvalidJSON),
     ]
 }
