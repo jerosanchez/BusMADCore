@@ -53,10 +53,14 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOnNon200HTTPResponse() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .invalidData, when: {
-            let anyData = "any data".data(using: .utf8)!
-            client.complete(withStatusCode: 400, data: anyData)
-        })
+        let samples = [199, 201, 300, 400, 500]
+        
+        samples.enumerated().forEach { index, code in
+            expect(sut, toCompleteWith: .invalidData, when: {
+                let anyData = "any data".data(using: .utf8)!
+                client.complete(withStatusCode: code, data: anyData, at: index)
+            })
+        }
     }
     
     // MARK: - Helpers
