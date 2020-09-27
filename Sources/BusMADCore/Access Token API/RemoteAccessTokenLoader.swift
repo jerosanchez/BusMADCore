@@ -10,6 +10,7 @@ public class RemoteAccessTokenLoader {
     
     public enum Error: Swift.Error {
         case connectivity
+        case invalidData
     }
     
     public init(from url: URL, client: HTTPClient) {
@@ -24,9 +25,10 @@ public class RemoteAccessTokenLoader {
         ]
         client.get(from: url, headers: headers) { result in
             switch result {
+            case .success:
+                completion(.invalidData)
             case .failure:
                 completion(.connectivity)
-            default: break
             }
         }
     }

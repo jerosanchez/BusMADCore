@@ -50,6 +50,15 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         })
     }
     
+    func test_load_deliversErrorOnNon200HTTPResponse() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .invalidData, when: {
+            let anyData = "any data".data(using: .utf8)!
+            client.complete(withStatusCode: 400, data: anyData)
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
