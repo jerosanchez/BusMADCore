@@ -72,11 +72,19 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         })
     }
     
-    func test_load_deliversErrorOn200HTTPRequestWithInvalidCredentialsJSON() {
+    func test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON() {
         let (sut, client) = makeSUT()
 
         expect(sut, toCompleteWith: .invalidCredentials, when: {
             client.complete(withStatusCode: 200, data: makeInvalidCredentialsJSON())
+        })
+    }
+    
+    func test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .wrongRequest, when: {
+            client.complete(withStatusCode: 200, data: makeWrongRequestJSON())
         })
     }
     
@@ -103,6 +111,15 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     private func makeInvalidCredentialsJSON() -> Data {
         let json: [String: Any] = [
             "code": "80",
+            "description": "a description",
+        ]
+        
+        return try! JSONSerialization.data(withJSONObject: json, options: [])
+    }
+    
+    private func makeWrongRequestJSON() -> Data {
+        let json: [String: Any] = [
+            "code": "90",
             "description": "a description",
         ]
         
