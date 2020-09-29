@@ -15,12 +15,17 @@ public class RemoteAccessTokenLoader {
         case wrongRequest
     }
     
+    public enum Result {
+        case success(AccessToken)
+        case failure(Error)
+    }
+    
     public init(from url: URL, client: HTTPClient) {
         self.url = url
         self.client = client
     }
     
-    public func load(clientId: String, passKey: String, completion: @escaping (Error?) -> Void) {
+    public func load(clientId: String, passKey: String, completion: @escaping (Result) -> Void) {
         let headers = [
             "clientId": clientId,
             "passKey": passKey
@@ -30,15 +35,15 @@ public class RemoteAccessTokenLoader {
             case let .success(data, response):
                 if response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) {
                     switch root.code {
-                    case "80": completion(.invalidCredentials)
-                    case "90": completion(.wrongRequest)
-                    default: completion(.invalidData)
+                    case "80": completion(.failure(.invalidCredentials))
+                    case "90": completion(.failure(.wrongRequest))
+                    default: completion(.failure(.invalidData))
                     }
                 } else {
-                    completion(.invalidData)
+                    completion(.failure(.invalidData))
                 }
             case .failure:
-                completion(.connectivity)
+                completion(.failure(.connectivity))
             }
         }
     }

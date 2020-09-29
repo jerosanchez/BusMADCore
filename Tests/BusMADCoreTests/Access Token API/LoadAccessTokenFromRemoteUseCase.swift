@@ -130,10 +130,11 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         
         let exp = expectation(description: "Wait for load completion")
         
-        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { receivedError in
-            if receivedError != nil {
-                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
-            } else {
+        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { receivedResult in
+            switch receivedResult {
+            case let .failure(error):
+                XCTAssertEqual(error, expectedError, file: file, line: line)
+            default:
                 XCTFail("Expected \(expectedError), received nil instead.", file: file, line: line)
             }
             
