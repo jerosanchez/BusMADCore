@@ -88,6 +88,37 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         })
     }
     
+    func test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON() {
+        let (sut, client) = makeSUT()
+        
+        let token = AccessToken(
+            token: UUID(),
+            expirationTime: TimeInterval(floatLiteral: 1.0),
+            dailyCallsLimit: 1,
+            todayCallsCount: 0)
+        
+        let tokenJSON: [String: Any] = [
+            "code": "00",
+            "description": "a description",
+            "data": [
+                "accessToken": "\(token.token.description)",
+                "tokenDteExpiration": [
+                    "$date": token.expirationTime,
+                ],
+                "apiCounter": [
+                    "current": token.dailyCallsLimit,
+                    "dailyUse": token.todayCallsCount,
+                ]
+            ]
+        ]
+        
+        let jsonData = try! JSONSerialization.data(withJSONObject: tokenJSON, options: [])
+
+        expect(sut, toCompleteWithResult: token, when: {
+            client.complete(withStatusCode: 200, data: jsonData)
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
@@ -136,6 +167,26 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
                 XCTAssertEqual(error, expectedError, file: file, line: line)
             default:
                 XCTFail("Expected \(expectedError), received nil instead.", file: file, line: line)
+            }
+            
+            exp.fulfill()
+        }
+        
+        action()
+
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWithResult expectedToken: AccessToken, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        
+        let exp = expectation(description: "Wait for load completion")
+        
+        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { receivedResult in
+            switch receivedResult {
+            case let .success(receivedToken):
+                XCTAssertEqual(receivedToken, expectedToken, file: file, line: line)
+            default:
+                XCTFail("Expected \(expectedToken) token, received nil instead.", file: file, line: line)
             }
             
             exp.fulfill()
