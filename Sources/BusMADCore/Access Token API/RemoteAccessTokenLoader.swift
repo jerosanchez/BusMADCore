@@ -11,6 +11,7 @@ public class RemoteAccessTokenLoader {
     public enum Error: Swift.Error {
         case connectivity
         case invalidData
+        case invalidCredentials
     }
     
     public init(from url: URL, client: HTTPClient) {
@@ -25,11 +26,20 @@ public class RemoteAccessTokenLoader {
         ]
         client.get(from: url, headers: headers) { result in
             switch result {
-            case .success:
-                completion(.invalidData)
+            case let .success(data, _):
+                if let _ = try? JSONDecoder().decode(Root.self, from: data) {
+                    completion(.invalidCredentials)
+                } else {
+                    completion(.invalidData)
+                }
             case .failure:
                 completion(.connectivity)
             }
         }
     }
+}
+
+private struct Root: Decodable {
+    let code: String
+    let description: String
 }

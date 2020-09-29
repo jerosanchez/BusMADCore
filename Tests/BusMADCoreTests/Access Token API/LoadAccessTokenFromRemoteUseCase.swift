@@ -72,6 +72,14 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         })
     }
     
+    func test_load_deliversErrorOn200HTTPRequestWithInvalidCredentialsJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .invalidCredentials, when: {
+            client.complete(withStatusCode: 200, data: makeInvalidCredentialsJSON())
+        })
+    }
+    
     // MARK: - Helpers
     
     private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteAccessTokenLoader, client: HTTPClientSpy) {
@@ -90,6 +98,15 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     private func anyPassKey() -> String {
         return "a pass key"
+    }
+    
+    private func makeInvalidCredentialsJSON() -> Data {
+        let json: [String: Any] = [
+            "code": "80",
+            "description": "a description",
+        ]
+        
+        return try! JSONSerialization.data(withJSONObject: json, options: [])
     }
     
     private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWith expectedError: RemoteAccessTokenLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
