@@ -44,7 +44,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOnHTTPError() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .connectivity, when: {
+        expect(sut, toCompleteWith: .failure(.connectivity), when: {
             let clientError = NSError(domain: "a client error", code: 1)
             client.complete(withError: clientError)
         })
@@ -56,7 +56,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let samples = [199, 201, 300, 400, 500]
         
         samples.enumerated().forEach { index, code in
-            expect(sut, toCompleteWith: .invalidData, when: {
+            expect(sut, toCompleteWith: .failure(.invalidData), when: {
                 let anyData = "any data".data(using: .utf8)!
                 client.complete(withStatusCode: code, data: anyData, at: index)
             })
@@ -66,7 +66,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithInvalidJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .invalidData, when: {
+        expect(sut, toCompleteWith: .failure(.invalidData), when: {
             let invalidJSON = "invalid JSON".data(using: .utf8)!
             client.complete(withStatusCode: 200, data: invalidJSON)
         })
@@ -75,7 +75,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .invalidCredentials, when: {
+        expect(sut, toCompleteWith: .failure(.invalidCredentials), when: {
             client.complete(withStatusCode: 200, data: makeInvalidCredentialsJSON())
         })
     }
@@ -83,7 +83,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .wrongRequest, when: {
+        expect(sut, toCompleteWith: .failure(.wrongRequest), when: {
             client.complete(withStatusCode: 200, data: makeWrongRequestJSON())
         })
     }
@@ -92,7 +92,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let (sut, client) = makeSUT()
         let token = makeAccessToken()
 
-        expect(sut, toCompleteWithResult: token.model, when: {
+        expect(sut, toCompleteWith: .success(token.model), when: {
             client.complete(withStatusCode: 200, data: makeJSONData(token.json))
         })
     }
@@ -164,36 +164,17 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         return try! JSONSerialization.data(withJSONObject: json, options: [])
     }
     
-    private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWith expectedError: RemoteAccessTokenLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
-        
+    private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWith expectedResult: RemoteAccessTokenLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
         
         sut.load(clientId: anyClientId(), passKey: anyPassKey()) { receivedResult in
-            switch receivedResult {
-            case let .failure(error):
-                XCTAssertEqual(error, expectedError, file: file, line: line)
-            default:
-                XCTFail("Expected \(expectedError), received nil instead.", file: file, line: line)
-            }
-            
-            exp.fulfill()
-        }
-        
-        action()
-
-        wait(for: [exp], timeout: 1.0)
-    }
-    
-    private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWithResult expectedToken: AccessToken, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
-        
-        let exp = expectation(description: "Wait for load completion")
-        
-        sut.load(clientId: anyClientId(), passKey: anyPassKey()) { receivedResult in
-            switch receivedResult {
-            case let .success(receivedToken):
+            switch (receivedResult, expectedResult) {
+            case let (.success(receivedToken), .success(expectedToken)):
                 XCTAssertEqual(receivedToken, expectedToken, file: file, line: line)
+            case let (.failure(receivedError), .failure(expectedError)):
+                XCTAssertEqual(receivedError, expectedError, file: file, line: line)
             default:
-                XCTFail("Expected \(expectedToken) token, received nil instead.", file: file, line: line)
+                XCTFail("Expected \(expectedResult), received \(receivedResult) instead.", file: file, line: line)
             }
             
             exp.fulfill()
