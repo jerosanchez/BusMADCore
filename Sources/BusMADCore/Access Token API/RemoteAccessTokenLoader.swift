@@ -33,24 +33,31 @@ public class RemoteAccessTokenLoader {
         client.get(from: url, headers: headers) { result in
             switch result {
             case let .success(data, response):
-                if response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) {
-                    switch root.code {
-                    case "00":
-                        if let token = root.token {
-                            completion(.success(token))
-                        } else {
-                            completion(.failure(.invalidData))
-                        }
-                    case "80": completion(.failure(.invalidCredentials))
-                    case "90": completion(.failure(.wrongRequest))
-                    default: completion(.failure(.invalidData))
-                    }
-                } else {
-                    completion(.failure(.invalidData))
-                }
+                completion(AccessTokenMapper.map(data, from: response))
             case .failure:
                 completion(.failure(.connectivity))
             }
+        }
+    }
+}
+
+private class AccessTokenMapper {
+    
+    static func map(_ data: Data, from response: HTTPURLResponse) -> RemoteAccessTokenLoader.Result {
+        guard response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) else {
+            return .failure(RemoteAccessTokenLoader.Error.invalidData)
+        }
+        
+        switch root.code {
+        case "00":
+            if let token = root.token {
+                return .success(token)
+            } else {
+                return .failure(RemoteAccessTokenLoader.Error.invalidData)
+            }
+        case "80": return .failure(RemoteAccessTokenLoader.Error.invalidCredentials)
+        case "90": return .failure(RemoteAccessTokenLoader.Error.wrongRequest)
+        default: return .failure(RemoteAccessTokenLoader.Error.invalidData)
         }
     }
 }
