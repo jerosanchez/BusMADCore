@@ -38,6 +38,8 @@ public class RemoteAccessTokenLoader {
                     case "00":
                         if let token = root.token {
                             completion(.success(token))
+                        } else {
+                            completion(.failure(.invalidData))
                         }
                     case "80": completion(.failure(.invalidCredentials))
                     case "90": completion(.failure(.wrongRequest))

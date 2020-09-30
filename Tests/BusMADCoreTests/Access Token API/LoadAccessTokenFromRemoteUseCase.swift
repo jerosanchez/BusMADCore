@@ -100,6 +100,14 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         }
     }
     
+    func test_load_deliversErrorOn200HTTPResponseWithCode00AndEmptyDataInJSON() {
+        let (sut, client) = makeSUT()
+
+        expect(sut, toCompleteWith: .failure(.invalidData), when: {
+            client.complete(withStatusCode: 200, data: makeJSONWithCode("00"))
+        })
+    }
+    
     func test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON() {
         let (sut, client) = makeSUT()
         let token = makeAccessToken()
@@ -219,6 +227,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         ("test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON", test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON),
         ("test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON", test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON),
         ("test_load_deliversErrorOn200HTTPResponseWithUnknownCodeInJSON", test_load_deliversErrorOn200HTTPResponseWithUnknownCodeInJSON),
+        ("test_load_deliversErrorOn200HTTPResponseWithCode00AndEmptyDataInJSON", test_load_deliversErrorOn200HTTPResponseWithCode00AndEmptyDataInJSON),
         ("test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON", test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON),
     ]
 }
