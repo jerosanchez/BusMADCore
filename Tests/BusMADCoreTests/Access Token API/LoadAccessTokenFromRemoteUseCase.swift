@@ -88,6 +88,18 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         })
     }
     
+    func test_load_deliversErrorOn200HTTPResponseWithUnknownCodeInJSON() {
+        let (sut, client) = makeSUT()
+
+        let samples = ["01", "79", "81", "89", "91"]
+        
+        samples.enumerated().forEach { (index, value) in
+            expect(sut, toCompleteWith: .failure(.invalidData), when: {
+                client.complete(withStatusCode: 200, data: makeJSONWithCode(value), at: index)
+            })
+        }
+    }
+    
     func test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON() {
         let (sut, client) = makeSUT()
         let token = makeAccessToken()
@@ -129,6 +141,15 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     private func makeWrongRequestJSON() -> Data {
         let json: [String: Any] = [
             "code": "90",
+            "description": "a description",
+        ]
+        
+        return try! JSONSerialization.data(withJSONObject: json, options: [])
+    }
+    
+    private func makeJSONWithCode(_ code: String) -> Data {
+        let json: [String: Any] = [
+            "code": "\(code)",
             "description": "a description",
         ]
         
@@ -195,5 +216,9 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         ("test_load_deliversErrorOnHTTPError", test_load_deliversErrorOnHTTPError),
         ("test_load_deliversErrorOnNon200HTTPResponse", test_load_deliversErrorOnNon200HTTPResponse),
         ("test_load_deliversErrorOn200HTTPResponseWithInvalidJSON", test_load_deliversErrorOn200HTTPResponseWithInvalidJSON),
+        ("test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON", test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON),
+        ("test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON", test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON),
+        ("test_load_deliversErrorOn200HTTPResponseWithUnknownCodeInJSON", test_load_deliversErrorOn200HTTPResponseWithUnknownCodeInJSON),
+        ("test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON", test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON),
     ]
 }
