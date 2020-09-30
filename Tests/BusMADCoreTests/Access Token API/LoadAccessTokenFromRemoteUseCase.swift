@@ -90,31 +90,10 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     
     func test_load_deliversAccessTokenOn200HTTPResponseWithAccessTokenJSON() {
         let (sut, client) = makeSUT()
-        
-        let token = AccessToken(
-            token: UUID(),
-            expirationTime: TimeInterval(floatLiteral: 1.0),
-            dailyCallsLimit: 1,
-            todayCallsCount: 0)
-        
-        let tokenJSON: [String: Any] = [
-            "code": "00",
-            "description": "a description",
-            "data": [
-                "accessToken": "\(token.token.description)",
-                "tokenDteExpiration": [
-                    "$date": token.expirationTime,
-                ],
-                "apiCounter": [
-                    "current": token.dailyCallsLimit,
-                    "dailyUse": token.todayCallsCount,
-                ]
-            ]
-        ]
-        
-        let jsonData = try! JSONSerialization.data(withJSONObject: tokenJSON, options: [])
+        let token = makeAccessToken()
 
-        expect(sut, toCompleteWithResult: token, when: {
+        expect(sut, toCompleteWithResult: token.model, when: {
+            let jsonData = try! JSONSerialization.data(withJSONObject: token.json, options: [])
             client.complete(withStatusCode: 200, data: jsonData)
         })
     }
@@ -155,6 +134,31 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         ]
         
         return try! JSONSerialization.data(withJSONObject: json, options: [])
+    }
+    
+    private func makeAccessToken() -> (model: AccessToken, json: [String: Any]) {
+        let token = AccessToken(
+            token: UUID(),
+            expirationTime: TimeInterval(floatLiteral: 1.0),
+            dailyCallsLimit: 1,
+            todayCallsCount: 0)
+        
+        let json: [String: Any] = [
+            "code": "00",
+            "description": "a description",
+            "data": [
+                "accessToken": "\(token.token.description)",
+                "tokenDteExpiration": [
+                    "$date": token.expirationTime,
+                ],
+                "apiCounter": [
+                    "current": token.dailyCallsLimit,
+                    "dailyUse": token.todayCallsCount,
+                ]
+            ]
+        ]
+        
+        return (token, json)
     }
     
     private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWith expectedError: RemoteAccessTokenLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
