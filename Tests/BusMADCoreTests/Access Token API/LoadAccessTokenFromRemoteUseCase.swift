@@ -93,8 +93,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let token = makeAccessToken()
 
         expect(sut, toCompleteWithResult: token.model, when: {
-            let jsonData = try! JSONSerialization.data(withJSONObject: token.json, options: [])
-            client.complete(withStatusCode: 200, data: jsonData)
+            client.complete(withStatusCode: 200, data: makeJSONData(token.json))
         })
     }
     
@@ -159,6 +158,10 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         ]
         
         return (token, json)
+    }
+    
+    private func makeJSONData(_ json: [String: Any]) -> Data {
+        return try! JSONSerialization.data(withJSONObject: json, options: [])
     }
     
     private func expect(_ sut: RemoteAccessTokenLoader, toCompleteWith expectedError: RemoteAccessTokenLoader.Error, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
