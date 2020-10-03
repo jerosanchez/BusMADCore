@@ -22,7 +22,7 @@ class AccessTokenAPIEndToEndTests: XCTestCase {
     
     private func getAccessTokenResult(file: StaticString = #file, line: UInt = #line) -> LoadAccessTokenResult? {
         let client = URLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
-        let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/mobilitylabs/user/login/")!
+        let serviceURL = URL(string: APIConfig.getAccessTokenEndpoint)!
         let loader = RemoteAccessTokenLoader(from: serviceURL, client: client)
 
         trackForMemoryLeaks(client, file: file, line: line)

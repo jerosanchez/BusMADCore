@@ -27,7 +27,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         let latitude = 40.417008
         let longitude = -3.705487
         let radius = 350
-        let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/transport/busemtmad/stops/arroundxy")!
+        let serviceURL = URL(string: APIConfig.getNearestStopsEndpoint)!
         let client = makeSigningClient()
         let loader = RemoteNearestStopsLoader(url: serviceURL, client: client)
         
@@ -47,7 +47,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     }
     
     private func makeSigningClient() -> SigningURLSessionHTTPClient {
-        let loginServiceURL = URL(string: "https://openapi.emtmadrid.es/v2/mobilitylabs/user/login/")!
+        let loginServiceURL = URL(string: APIConfig.getAccessTokenEndpoint)!
         let client = URLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
         let accessTokenLoader = RemoteAccessTokenLoader(from: loginServiceURL, client: client)
         return SigningURLSessionHTTPClient(client: client, accessTokenLoader: accessTokenLoader)
