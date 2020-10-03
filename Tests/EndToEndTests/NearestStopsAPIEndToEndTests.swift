@@ -52,6 +52,12 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         let accessTokenLoader = RemoteAccessTokenLoader(from: loginServiceURL, client: client)
         return SigningURLSessionHTTPClient(client: client, accessTokenLoader: accessTokenLoader)
     }
+    
+    // MARK: - Linux compatibility
+    
+    static var allTests = [
+        ("test_endToEndGETNearestStopsResult_matchesExpectedData", test_endToEndGETNearestStopsResult_matchesExpectedData),
+    ]
 }
 
 private class SigningURLSessionHTTPClient: HTTPClient {

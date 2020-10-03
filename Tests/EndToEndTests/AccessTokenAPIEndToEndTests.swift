@@ -39,4 +39,10 @@ class AccessTokenAPIEndToEndTests: XCTestCase {
         wait(for: [exp], timeout: 5.0)
         return receivedResult
     }
+    
+    // MARK: - Linux compatibility
+    
+    static var allTests = [
+        ("test_EndToEndGETAccessTokenResult_receivesAValidAccessToken", test_EndToEndGETAccessTokenResult_receivesAValidAccessToken),
+    ]
 }
