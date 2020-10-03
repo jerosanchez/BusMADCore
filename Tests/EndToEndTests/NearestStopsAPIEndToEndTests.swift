@@ -55,7 +55,7 @@ private class SignedURLSessionHTTPClient: URLSessionHTTPClient {
         loader.load(clientId: CLIENT_ID, passKey: PASS_KEY) { result in
             switch result {
             case let .success(accessToken):
-                let headers = ["accessToken": accessToken.token.description]
+                let headers = ["accessToken": accessToken.token.description.lowercased()]
                 self.get(from: url, headers: headers, completion: completion)
             case .failure:
                 completion(.failure(NSError(domain: "End-to-end tests", code: 1, userInfo: ["description": "Unable to load an access token from the service"])))
