@@ -172,17 +172,19 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
             todayCallsCount: 0)
         
         let json: [String: Any] = [
-            "code": "00",
+            "code": "01",
             "description": "a description",
             "data": [
-                "accessToken": "\(token.token.description)",
-                "tokenDteExpiration": [
-                    "$date": token.expirationTime,
+                [
+                    "accessToken": "\(token.token.description)",
+                    "tokenDteExpiration": [
+                        "$date": token.expirationTime,
+                    ],
+                    "apiCounter": [
+                        "current": token.todayCallsCount,
+                        "dailyUse": token.dailyCallsLimit,
+                    ],
                 ],
-                "apiCounter": [
-                    "current": token.todayCallsCount,
-                    "dailyUse": token.dailyCallsLimit,
-                ]
             ]
         ]
         

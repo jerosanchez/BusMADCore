@@ -8,7 +8,7 @@ internal final class AccessTokenMapper {
     private struct Root: Decodable {
         internal let code: String
         internal let description: String
-        internal let data: RemoteAccessToken?
+        internal let data: [RemoteAccessToken]?
     }
     
     private static var OK_200: Int { return 200 }
@@ -20,7 +20,7 @@ internal final class AccessTokenMapper {
         
         switch root.code {
         case "00":
-            if let accessToken = root.data {
+            if let accessToken = root.data?.first {
                 return accessToken
             } else {
                 throw RemoteAccessTokenLoader.Error.invalidData
