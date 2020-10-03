@@ -10,5 +10,5 @@ public enum LoadAccessTokenResult {
 }
 
 protocol AccessTokenLoader {
-    func load(from url: URL, clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void)
+    func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void)
 }

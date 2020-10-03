@@ -4,7 +4,7 @@
 
 import Foundation
 
-public class RemoteAccessTokenLoader {
+public class RemoteAccessTokenLoader: AccessTokenLoader {
     private let url: URL
     private let client: HTTPClient
     
