@@ -9,6 +9,6 @@ public enum LoadAccessTokenResult {
     case failure(Error)
 }
 
-protocol AccessTokenLoader {
+public protocol AccessTokenLoader {
     func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void)
 }
