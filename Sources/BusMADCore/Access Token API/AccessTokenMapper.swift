@@ -19,7 +19,7 @@ internal final class AccessTokenMapper {
         }
         
         switch root.code {
-        case "00":
+        case "01":
             if let accessToken = root.data?.first {
                 return accessToken
             } else {

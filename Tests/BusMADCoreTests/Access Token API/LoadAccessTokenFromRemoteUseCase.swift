@@ -38,7 +38,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
 
         sut.load(clientId: clientId, passKey: passKey) { _ in }
 
-        XCTAssertEqual(client.headers.first!, ["clientId": clientId, "passKey": passKey])
+        XCTAssertEqual(client.headers.first!, ["X-ClientId": clientId, "passKey": passKey])
     }
     
     func test_load_deliversErrorOnHTTPError() {

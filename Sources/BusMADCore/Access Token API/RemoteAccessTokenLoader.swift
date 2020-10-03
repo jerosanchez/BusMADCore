@@ -24,7 +24,7 @@ public class RemoteAccessTokenLoader: AccessTokenLoader {
     
     public func load(clientId: String, passKey: String, completion: @escaping (Result) -> Void) {
         let headers = [
-            "clientId": clientId,
+            "X-ClientId": clientId,
             "passKey": passKey
         ]
         client.get(from: url, headers: headers) { result in
