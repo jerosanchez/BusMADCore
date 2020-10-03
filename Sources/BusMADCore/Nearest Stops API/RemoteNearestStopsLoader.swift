@@ -28,10 +28,21 @@ public class RemoteNearestStopsLoader: NearestStopsLoader {
             
             switch result {
             case let .success(data, response):
-                completion(NearestStopsMapper.map(data, with: response))
+                completion(RemoteNearestStopsLoader.map(data, from: response))
             case .failure:
                 completion(.failure(Error.connectivity))
             }
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    static private func map(_ data: Data, from response: HTTPURLResponse) -> Result {
+        do {
+            let nearestStops = try NearestStopsMapper.map(data, with: response)
+            return .success(nearestStops.toModels())
+        } catch {
+            return .failure(error)
         }
     }
 }
@@ -42,5 +53,28 @@ private extension URL {
             .appendingPathComponent("/\(longitude)", isDirectory: true)
             .appendingPathComponent("\(latitude)", isDirectory: true)
             .appendingPathComponent("\(radius)", isDirectory: true)
+    }
+}
+
+private extension Array where Element == RemoteNearestStop {
+    func toModels() -> [NearestStop] {
+        map { stop in
+            let latitude = stop.geometry.coordinates.count > 1 ? stop.geometry.coordinates[1] : 0
+            let longitude = stop.geometry.coordinates.count > 0 ? stop.geometry.coordinates[0] : 0
+
+            return NearestStop(
+                id: stop.stopId,
+                latitude: latitude,
+                longitude: longitude,
+                name: stop.stopName,
+                address: stop.address,
+                distanceInMeters: stop.metersToPoint,
+                lines: stop.lines.toModels())}
+    }
+}
+
+private extension Array where Element == RemoteNearestStopLine {
+    func toModels() -> [NearestStopLine] {
+        map { NearestStopLine(id: $0.line, origin: $0.nameA, destination: $0.nameB) }
     }
 }

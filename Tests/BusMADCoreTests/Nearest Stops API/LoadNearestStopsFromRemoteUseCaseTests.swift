@@ -14,8 +14,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_requestsDataFromURL() {
-        let url = URL(string: "https://a-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
 
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
 
@@ -23,8 +22,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_loadTwice_requestsDataFromURLTwice() {
-        let url = URL(string: "https://a-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
 
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
         sut.load(latitude: 1.0, longitude: 1.0, radius: 1) { _ in }
@@ -32,11 +30,11 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         XCTAssertEqual(client.requestedURLs.count, 2)
     }
     
-    func test_load_usesAnURLWithProperPathComponents() {
+    func test_load_usesAnURLWithCorrectPathComponents() {
         let latitude = 1.0
         let longitude = 1.0
         let radius = 1
-        let url = URL(string: "https://a-url.com")!
+        let url = anyURL()
         let (sut, client) = makeSUT(url: url)
 
         sut.load(latitude: latitude, longitude: longitude, radius: radius) { _ in }
@@ -115,7 +113,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
     
     func test_load_doesNotDeliverResultAfterSUTInstanceHasBeenDeallocated() {
-        let url = URL(string: "https://a-url.com")!
+        let url = anyURL()
         let client = HTTPClientSpy()
         var sut: RemoteNearestStopsLoader? = RemoteNearestStopsLoader(url: url, client: client)
 
@@ -130,7 +128,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func makeSUT(url: URL = URL(string: "https://a-url.com")!, file: StaticString = #file, line: UInt = #line) -> (sut: RemoteNearestStopsLoader, client: HTTPClientSpy) {
+    private func makeSUT(url: URL = anyURL(), file: StaticString = #file, line: UInt = #line) -> (sut: RemoteNearestStopsLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
         let sut = RemoteNearestStopsLoader(url: url, client: client)
         trackForMemoryLeaks(sut, file: file, line: line)
@@ -172,7 +170,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return (stop, stopJSON)
     }
     
-    private func makeJSON(code: String = "00", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
+    private func makeJSON(code: String = "01", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
         var json: [String: Any] = [
             "code": code as Any,
             "description": description as Any,
@@ -184,7 +182,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
         
     private func makeEmptyJSON() -> Data {
-        return makeJSON([])
+        return makeJSON(code: "01", description: "a description", [])
     }
     
     private func makeExpiredSessionJSON() -> Data {
@@ -219,26 +217,6 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
 
         wait(for: [exp], timeout: 1.0)
     }
-    
-    class HTTPClientSpy: HTTPClient {
-        private var messages = [(url: URL, completion: (HTTPClientResult) -> Void)]()
-        var requestedURLs: [URL] {
-            messages.map { $0.url }
-        }
-        
-        func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
-            messages.append((url, completion))
-        }
-        
-        func complete(withError error: Error, at index: Int = 0) {
-            messages[index].completion(.failure(error))
-        }
-        
-        func complete(withStatusCode code: Int, data: Data, at index: Int = 0) {
-            let response = HTTPURLResponse(url: messages[index].url, statusCode: code, httpVersion: nil, headerFields: nil)!
-            messages[index].completion(.success(data, response))
-        }
-    }
 
     // MARK: - Linux compatibility
     
@@ -246,7 +224,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         ("test_init_doesNotRequestDataFromURL", test_init_doesNotRequestDataFromURL),
         ("test_load_requestsDataFromURL", test_load_requestsDataFromURL),
         ("test_loadTwice_requestsDataFromURLTwice", test_loadTwice_requestsDataFromURLTwice),
-        ("test_load_usesAnURLWithProperPathComponents", test_load_usesAnURLWithProperPathComponents),
+        ("test_load_usesAnURLWithCorrectPathComponents", test_load_usesAnURLWithCorrectPathComponents),
         ("test_load_deliversErrorOnHTTPError", test_load_deliversErrorOnHTTPError),
         ("test_load_deliversErrorOnNon200HTTPResponse", test_load_deliversErrorOnNon200HTTPResponse),
         ("test_load_deliversErrorOn200HTTPRequestWithInvalidJSON", test_load_deliversErrorOn200HTTPRequestWithInvalidJSON),

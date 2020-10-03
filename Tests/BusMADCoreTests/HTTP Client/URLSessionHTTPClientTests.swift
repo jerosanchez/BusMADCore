@@ -21,7 +21,6 @@ class URLSessionHTTPClientTests: XCTestCase {
     
     func test_getFromURL_performsGETRequestWithURL() {
         let url = anyURL()
-        let sut = makeSUT()
         
         let exp = expectation(description: "Wait for request")
         
@@ -32,22 +31,17 @@ class URLSessionHTTPClientTests: XCTestCase {
             exp.fulfill()
         }
         
-        sut.get(from: url) { _ in }
+        makeSUT().get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1.0)
     }
     
-    func test_getFromURL_performsGETRequestWithURLAndHeaders() {
-        let url = anyURL()
-        let sut = makeSUT()
+    func test_getFromURL_performsGETRequestWithHeaders() {
         let headers = ["header": "value"]
         
         let exp = expectation(description: "Wait for request")
         
         URLProtocolStub.observeRequest { request in
-            XCTAssertEqual(request.httpMethod, "GET")
-            XCTAssertEqual(request.url, url)
-            
             XCTAssertEqual(request.allHTTPHeaderFields?.count, headers.count)
             request.allHTTPHeaderFields?.forEach() { key, value in
                 XCTAssertEqual(request.allHTTPHeaderFields?[key], headers[key])
@@ -56,7 +50,7 @@ class URLSessionHTTPClientTests: XCTestCase {
             exp.fulfill()
         }
         
-        sut.get(from: url, headers: headers) { _ in }
+        makeSUT().get(from: anyURL(), headers: headers) { _ in }
         
         wait(for: [exp], timeout: 1.0)
     }
@@ -145,10 +139,6 @@ class URLSessionHTTPClientTests: XCTestCase {
         return receivedResult
     }
 
-    private func anyURL() -> URL {
-        return URL(string: "https://any-url.com")!
-    }
-    
     private func anyData() -> Data {
         return "any data".data(using: .utf8)!
     }
@@ -229,7 +219,7 @@ class URLSessionHTTPClientTests: XCTestCase {
     
     static var allTests = [
         ("test_getFromURL_performsGETRequestWithURL", test_getFromURL_performsGETRequestWithURL),
-        ("test_getFromURL_performsGETRequestWithURLAndHeaders", test_getFromURL_performsGETRequestWithURLAndHeaders),
+        ("test_getFromURL_performsGETRequestWithHeaders", test_getFromURL_performsGETRequestWithHeaders),
         ("test_getFromURL_failsOnRequestError", test_getFromURL_failsOnRequestError),
         ("test_getFromURL_failsOnAllInvalidRepresentationCases", test_getFromURL_failsOnAllInvalidRepresentationCases),
         ("test_getFromURL_succeedsOnHTTPURLResponseWithData", test_getFromURL_succeedsOnHTTPURLResponseWithData),
