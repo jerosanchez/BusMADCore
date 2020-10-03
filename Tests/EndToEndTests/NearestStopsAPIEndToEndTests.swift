@@ -44,17 +44,22 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
         wait(for: [exp], timeout: 5.0)
         return receivedResult
     }
-    
-    func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #file, line: UInt = #line) {
-        addTeardownBlock { [weak instance] in
-            XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
-        }
-    }
 }
 
 private class SignedURLSessionHTTPClient: URLSessionHTTPClient {
     override func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
-        let headers = ["accessToken": ACCESS_TOKEN]
-        get(from: url, headers: headers, completion: completion)
+        let client = SignedURLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
+        let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/mobilitylabs/user/login/")!
+        let loader = RemoteAccessTokenLoader(from: serviceURL, client: client)
+        
+        loader.load(clientId: CLIENT_ID, passKey: PASS_KEY) { result in
+            switch result {
+            case let .success(accessToken):
+                let headers = ["accessToken": accessToken.token.description]
+                self.get(from: url, headers: headers, completion: completion)
+            case .failure:
+                completion(.failure(NSError(domain: "End-to-end tests", code: 1, userInfo: ["description": "Unable to load an access token from the service"])))
+            }
+        }
     }
 }
