@@ -170,7 +170,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
         return (stop, stopJSON)
     }
     
-    private func makeJSON(code: String = "00", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
+    private func makeJSON(code: String = "01", description: String = "a description", _ stops: [[String: Any]]?) -> Data {
         var json: [String: Any] = [
             "code": code as Any,
             "description": description as Any,
@@ -182,7 +182,7 @@ class LoadNearestStopsFromRemoteUseCaseTests: XCTestCase {
     }
         
     private func makeEmptyJSON() -> Data {
-        return makeJSON([])
+        return makeJSON(code: "01", description: "a description", [])
     }
     
     private func makeExpiredSessionJSON() -> Data {
