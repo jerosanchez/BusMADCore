@@ -30,15 +30,21 @@ public class RemoteAccessTokenLoader {
         client.get(from: url, headers: headers) { result in
             switch result {
             case let .success(data, response):
-                do {
-                    let token = try AccessTokenMapper.map(data, from: response)
-                    completion(.success(AccessToken(token: token.accessToken, expirationTime: token.expirationTime, dailyCallsLimit: token.dailyCallsLimit, todayCallsCount: token.todayCallsCount)))
-                } catch {
-                    completion(.failure(error))
-                }
+                completion(RemoteAccessTokenLoader.map(data, from: response))
             case .failure:
                 completion(.failure(Error.connectivity))
             }
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    static private func map(_ data: Data, from response: HTTPURLResponse) -> Result {
+        do {
+            let token = try AccessTokenMapper.map(data, from: response)
+            return .success(AccessToken(token: token.accessToken, expirationTime: token.expirationTime, dailyCallsLimit: token.dailyCallsLimit, todayCallsCount: token.todayCallsCount))
+        } catch {
+            return .failure(error)
         }
     }
 }
