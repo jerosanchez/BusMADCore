@@ -20,8 +20,8 @@ internal struct RemoteAccessToken: Decodable {
         }
         
         enum ApiCounterKeys: String, CodingKey {
-            case dailyCallsLimit = "current"
-            case todayCallsCount = "dailyUse"
+            case dailyCallsLimit = "dailyUse"
+            case todayCallsCount = "current"
         }
     }
     

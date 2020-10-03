@@ -180,8 +180,8 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
                     "$date": token.expirationTime,
                 ],
                 "apiCounter": [
-                    "current": token.dailyCallsLimit,
-                    "dailyUse": token.todayCallsCount,
+                    "current": token.todayCallsCount,
+                    "dailyUse": token.dailyCallsLimit,
                 ]
             ]
         ]
