@@ -4,73 +4,64 @@
 
 import Foundation
 
-internal final class AccessTokenMapper {
+internal struct RemoteAccessToken: Decodable {
+    internal let accessToken: UUID
+    internal let expirationTime: TimeInterval
+    internal let dailyCallsLimit: Int
+    internal let todayCallsCount: Int
     
-    private struct Root: Decodable {
-        let code: String
-        let description: String
-        let data: TokenInfo?
+    private enum CodingKeys: String, CodingKey {
+        case accessToken
+        case tokenDteExpiration
+        case apiCounter
         
-        var token: AccessToken? {
-            guard let data = data else { return nil }
-            
-            return AccessToken(
-                token: data.accessToken,
-                expirationTime: data.expirationTime,
-                dailyCallsLimit: data.dailyCallsLimit,
-                todayCallsCount: data.todayCallsCount)
+        enum TokenDteExpirationKeys: String, CodingKey {
+            case expirationTime = "$date"
+        }
+        
+        enum ApiCounterKeys: String, CodingKey {
+            case dailyCallsLimit = "current"
+            case todayCallsCount = "dailyUse"
         }
     }
+    
+    internal init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.accessToken = try container.decode(UUID.self, forKey: .accessToken)
+        
+        let tokenDteExpirationContainer = try container.nestedContainer(keyedBy: CodingKeys.TokenDteExpirationKeys.self, forKey: .tokenDteExpiration)
+        self.expirationTime = try tokenDteExpirationContainer.decode(TimeInterval.self, forKey: .expirationTime)
+        
+        let apiCounterContainer = try container.nestedContainer(keyedBy: CodingKeys.ApiCounterKeys.self, forKey: .apiCounter)
+        self.dailyCallsLimit = try apiCounterContainer.decode(Int.self, forKey: .dailyCallsLimit)
+        self.todayCallsCount = try apiCounterContainer.decode(Int.self, forKey: .todayCallsCount)
+    }
+}
 
-    private struct TokenInfo: Decodable {
-        let accessToken: UUID
-        let expirationTime: TimeInterval
-        let dailyCallsLimit: Int
-        let todayCallsCount: Int
-        
-        enum CodingKeys: String, CodingKey {
-            case accessToken
-            case tokenDteExpiration
-            case apiCounter
-            
-            enum TokenDteExpirationKeys: String, CodingKey {
-                case expirationTime = "$date"
-            }
-            
-            enum ApiCounterKeys: String, CodingKey {
-                case dailyCallsLimit = "current"
-                case todayCallsCount = "dailyUse"
-            }
-        }
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.accessToken = try container.decode(UUID.self, forKey: .accessToken)
-            
-            let tokenDteExpirationContainer = try container.nestedContainer(keyedBy: CodingKeys.TokenDteExpirationKeys.self, forKey: .tokenDteExpiration)
-            self.expirationTime = try tokenDteExpirationContainer.decode(TimeInterval.self, forKey: .expirationTime)
-            
-            let apiCounterContainer = try container.nestedContainer(keyedBy: CodingKeys.ApiCounterKeys.self, forKey: .apiCounter)
-            self.dailyCallsLimit = try apiCounterContainer.decode(Int.self, forKey: .dailyCallsLimit)
-            self.todayCallsCount = try apiCounterContainer.decode(Int.self, forKey: .todayCallsCount)
-        }
+internal final class AccessTokenMapper {
+    private struct Root: Decodable {
+        internal let code: String
+        internal let description: String
+        internal let data: RemoteAccessToken?
     }
     
-    static internal func map(_ data: Data, from response: HTTPURLResponse) -> RemoteAccessTokenLoader.Result {
-        guard response.statusCode == 200, let root = try? JSONDecoder().decode(Root.self, from: data) else {
-            return .failure(RemoteAccessTokenLoader.Error.invalidData)
+    private static var OK_200: Int { return 200 }
+    
+    static internal func map(_ data: Data, from response: HTTPURLResponse) throws -> RemoteAccessToken {
+        guard response.statusCode == OK_200, let root = try? JSONDecoder().decode(Root.self, from: data) else {
+            throw RemoteAccessTokenLoader.Error.invalidData
         }
         
         switch root.code {
         case "00":
-            if let token = root.token {
-                return .success(token)
+            if let accessToken = root.data {
+                return accessToken
             } else {
-                return .failure(RemoteAccessTokenLoader.Error.invalidData)
+                throw RemoteAccessTokenLoader.Error.invalidData
             }
-        case "80": return .failure(RemoteAccessTokenLoader.Error.invalidCredentials)
-        case "90": return .failure(RemoteAccessTokenLoader.Error.wrongRequest)
-        default: return .failure(RemoteAccessTokenLoader.Error.invalidData)
+        case "80": throw RemoteAccessTokenLoader.Error.invalidCredentials
+        case "90": throw RemoteAccessTokenLoader.Error.wrongRequest
+        default: throw RemoteAccessTokenLoader.Error.invalidData
         }
     }
 }

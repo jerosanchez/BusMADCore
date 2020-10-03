@@ -44,7 +44,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOnHTTPError() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.connectivity), when: {
+        expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.connectivity), when: {
             let clientError = NSError(domain: "a client error", code: 1)
             client.complete(withError: clientError)
         })
@@ -56,7 +56,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let samples = [199, 201, 300, 400, 500]
         
         samples.enumerated().forEach { index, code in
-            expect(sut, toCompleteWith: .failure(.invalidData), when: {
+            expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.invalidData), when: {
                 let anyData = "any data".data(using: .utf8)!
                 client.complete(withStatusCode: code, data: anyData, at: index)
             })
@@ -66,7 +66,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithInvalidJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.invalidData), when: {
+        expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.invalidData), when: {
             let invalidJSON = "invalid JSON".data(using: .utf8)!
             client.complete(withStatusCode: 200, data: invalidJSON)
         })
@@ -75,7 +75,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithInvalidCredentialsJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.invalidCredentials), when: {
+        expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.invalidCredentials), when: {
             client.complete(withStatusCode: 200, data: makeInvalidCredentialsJSON())
         })
     }
@@ -83,7 +83,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithWrongRequestJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.wrongRequest), when: {
+        expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.wrongRequest), when: {
             client.complete(withStatusCode: 200, data: makeWrongRequestJSON())
         })
     }
@@ -94,7 +94,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
         let samples = ["01", "79", "81", "89", "91"]
         
         samples.enumerated().forEach { (index, value) in
-            expect(sut, toCompleteWith: .failure(.invalidData), when: {
+            expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.invalidData), when: {
                 client.complete(withStatusCode: 200, data: makeJSONWithCode(value), at: index)
             })
         }
@@ -103,7 +103,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithCode00AndEmptyDataInJSON() {
         let (sut, client) = makeSUT()
 
-        expect(sut, toCompleteWith: .failure(.invalidData), when: {
+        expect(sut, toCompleteWith: .failure(RemoteAccessTokenLoader.Error.invalidData), when: {
             client.complete(withStatusCode: 200, data: makeJSONWithCode("00"))
         })
     }
@@ -200,7 +200,7 @@ class LoadAccessTokenFromRemoteUseCase: XCTestCase {
             switch (receivedResult, expectedResult) {
             case let (.success(receivedToken), .success(expectedToken)):
                 XCTAssertEqual(receivedToken, expectedToken, file: file, line: line)
-            case let (.failure(receivedError), .failure(expectedError)):
+            case let (.failure(receivedError as RemoteAccessTokenLoader.Error), .failure(expectedError as RemoteAccessTokenLoader.Error)):
                 XCTAssertEqual(receivedError, expectedError, file: file, line: line)
             default:
                 XCTFail("Expected \(expectedResult), received \(receivedResult) instead.", file: file, line: line)

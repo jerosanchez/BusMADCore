@@ -15,10 +15,7 @@ public class RemoteAccessTokenLoader {
         case wrongRequest
     }
     
-    public enum Result {
-        case success(AccessToken)
-        case failure(Error)
-    }
+    public typealias Result = LoadAccessTokenResult
     
     public init(from url: URL, client: HTTPClient) {
         self.url = url
@@ -33,9 +30,14 @@ public class RemoteAccessTokenLoader {
         client.get(from: url, headers: headers) { result in
             switch result {
             case let .success(data, response):
-                completion(AccessTokenMapper.map(data, from: response))
+                do {
+                    let token = try AccessTokenMapper.map(data, from: response)
+                    completion(.success(AccessToken(token: token.accessToken, expirationTime: token.expirationTime, dailyCallsLimit: token.dailyCallsLimit, todayCallsCount: token.todayCallsCount)))
+                } catch {
+                    completion(.failure(error))
+                }
             case .failure:
-                completion(.failure(.connectivity))
+                completion(.failure(Error.connectivity))
             }
         }
     }
