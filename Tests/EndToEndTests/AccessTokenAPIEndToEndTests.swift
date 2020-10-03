@@ -25,6 +25,9 @@ class AccessTokenAPIEndToEndTests: XCTestCase {
         let serviceURL = URL(string: "https://openapi.emtmadrid.es/v2/mobilitylabs/user/login/")!
         let loader = RemoteAccessTokenLoader(from: serviceURL, client: client)
 
+        trackForMemoryLeaks(client, file: file, line: line)
+        trackForMemoryLeaks(loader, file: file, line: line)
+
         let exp = expectation(description: "Wait for load completion")
         
         var receivedResult: LoadAccessTokenResult?
@@ -35,5 +38,11 @@ class AccessTokenAPIEndToEndTests: XCTestCase {
         
         wait(for: [exp], timeout: 5.0)
         return receivedResult
+    }
+    
+    private func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #file, line: UInt = #line) {
+        addTeardownBlock { [weak instance] in
+            XCTAssertNil(instance, "Instance should have been deallocated. Potential memory leak.", file: file, line: line)
+        }
     }
 }
