@@ -47,9 +47,9 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     }
     
     private func makeSigningClient() -> SigningURLSessionHTTPClient {
-        let loginServiceURL = URL(string: APIConfig.getAccessTokenEndpoint)!
+        let getAccessTokenURL = URL(string: APIConfig.getAccessTokenEndpoint)!
         let client = URLSessionHTTPClient(session: URLSession(configuration: .ephemeral))
-        let accessTokenLoader = RemoteAccessTokenLoader(from: loginServiceURL, client: client)
+        let accessTokenLoader = RemoteAccessTokenLoader(from: getAccessTokenURL, client: client)
         return SigningURLSessionHTTPClient(client: client, accessTokenLoader: accessTokenLoader)
     }
     
