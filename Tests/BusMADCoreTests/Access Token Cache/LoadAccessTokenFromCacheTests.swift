@@ -6,10 +6,19 @@ import XCTest
 import BusMADCore
 
 class AccessTokenStore {
-    var completions = [(AccessToken) -> Void]()
+    typealias RetrieveCompletion = (AccessToken) -> Void
     
-    func retrieve(completion: @escaping (AccessToken) -> Void) {
-        completions.append(completion)
+    private var retrieveCompletions = [RetrieveCompletion]()
+    
+    enum ReceivedMessage {
+        case retrieve
+    }
+    
+    private(set) var receivedMessages = [ReceivedMessage]()
+    
+    func retrieve(completion: @escaping RetrieveCompletion) {
+        retrieveCompletions.append(completion)
+        receivedMessages.append(.retrieve)
     }
 }
 
@@ -30,15 +39,15 @@ class LoadAccessTokenFromCacheTests: XCTestCase {
     func test_init_doesNotMessageStoreUponCreation() {
         let (_, store) = makeSUT()
         
-        XCTAssertEqual(store.completions.count, 0)
+        XCTAssertEqual(store.receivedMessages, [])
     }
     
     func test_load_requestsCacheRetrieval() {
         let (sut, store) = makeSUT()
-        
+        
         sut.load(clientId: "a client", passKey: "a pass key") { _ in }
         
-        XCTAssertEqual(store.completions.count, 1)
+        XCTAssertEqual(store.receivedMessages, [.retrieve])
     }
     
     // MARK: - Helpers
