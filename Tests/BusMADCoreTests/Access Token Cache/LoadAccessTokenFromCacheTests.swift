@@ -80,10 +80,6 @@ class LoadAccessTokenFromCacheTests: XCTestCase {
         return (sut, store)
     }
     
-    private func anyNSError() -> NSError {
-        return NSError(domain: "any error", code: 1)
-    }
-    
     private func expect(_ sut: LocalAccessTokenLoader, toCompleteWith expectedResult: LoadAccessTokenResult, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for load completion")
         
