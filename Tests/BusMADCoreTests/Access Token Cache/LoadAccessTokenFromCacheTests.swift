@@ -6,10 +6,10 @@ import XCTest
 import BusMADCore
 
 class AccessTokenStore {
-    var retrieveCallsCount: Int = 0
+    var completions = [(AccessToken) -> Void]()
     
-    func retrieve() {
-        retrieveCallsCount += 1
+    func retrieve(completion: @escaping (AccessToken) -> Void) {
+        completions.append(completion)
     }
 }
 
@@ -21,7 +21,7 @@ class LocalAccessTokenLoader: AccessTokenLoader {
     }
     
     func load(clientId: String, passKey: String, completion: @escaping (LoadAccessTokenResult) -> Void) {
-        
+        store.retrieve() { _ in }
     }
 }
 
@@ -30,7 +30,15 @@ class LoadAccessTokenFromCacheTests: XCTestCase {
     func test_init_doesNotMessageStoreUponCreation() {
         let (_, store) = makeSUT()
         
-        XCTAssertEqual(store.retrieveCallsCount, 0)
+        XCTAssertEqual(store.completions.count, 0)
+    }
+    
+    func test_load_requestsCacheRetrieval() {
+        let (sut, store) = makeSUT()
+        
+        sut.load(clientId: "a client", passKey: "a pass key") { _ in }
+        
+        XCTAssertEqual(store.completions.count, 1)
     }
     
     // MARK: - Helpers
