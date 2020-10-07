@@ -10,7 +10,7 @@ class NearestStopsAPIEndToEndTests: XCTestCase {
     func test_endToEndGETNearestStopsResult_matchesExpectedData() {
         switch getNearestStopsResult() {
         case let .success(stops)?:
-            XCTAssertEqual(stops.count, 3, "Expected 3 stops in the result")
+            XCTAssertEqual(stops.count, 6, "Expected 6 stops in the result")
             
         case let .failure(error)?:
             XCTFail("Expected successfull load result, got \(error) instead.")

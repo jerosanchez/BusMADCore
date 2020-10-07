@@ -21,7 +21,7 @@ internal class NearestStopsMapper {
         }
         
         switch root.code {
-        case "01":
+        case "00":
             if let nearestStops = root.data {
                 return nearestStops
             } else {
